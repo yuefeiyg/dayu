@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.TaskDictMapper" >
+
+  <select id="getTaskDictData" parameterType="java.lang.String" resultType="map">
+    SELECT dictCode , dictDesc
+    FROM task_dict
+    WHERE  parentCode = #{parentcode}
+    AND isView = '004001'
+  </select>
+
+  <select id="getTaskDictCodebyName" resultType="map" parameterType="java.lang.String" >
+    SELECT td.dictcode FROM task_dict td
+    where td.dictdesc = #{dictdesc}  AND isView = '004001';
+  </select>
+</mapper>

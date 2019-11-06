@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.FileComparisonScriptMapper" >
+  <sql id="Base_Column_List" >
+    scriptId, scriptName, scriptType, scriptUrl, scriptState, createUserId, createTime, 
+    updateTime
+  </sql>
+
+  <select id="getScriptList" resultType="map">
+    SELECT * FROM file_comparison_script
+    WHERE  scriptType = '007001'
+    AND  scriptState = '1'
+
+  </select>
+
+  <select id="selectByPrimaryKey" resultType="map" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from file_comparison_script
+    where scriptId = #{scriptid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from file_comparison_script
+    where scriptId = #{scriptid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="map" >
+    insert into file_comparison_script (scriptId, scriptName, scriptType, 
+      scriptUrl, scriptState, createUserId, 
+      createTime, updateTime)
+    values (#{scriptid,jdbcType=VARCHAR}, #{scriptname,jdbcType=VARCHAR}, #{scripttype,jdbcType=VARCHAR}, 
+      #{scripturl,jdbcType=VARCHAR}, #{scriptstate,jdbcType=VARCHAR}, #{createuserid,jdbcType=VARCHAR}, 
+      #{createtime,jdbcType=VARCHAR}, #{updatetime,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="map" >
+    insert into file_comparison_script
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="scriptid != null" >
+        scriptId,
+      </if>
+      <if test="scriptname != null" >
+        scriptName,
+      </if>
+      <if test="scripttype != null" >
+        scriptType,
+      </if>
+      <if test="scripturl != null" >
+        scriptUrl,
+      </if>
+      <if test="scriptstate != null" >
+        scriptState,
+      </if>
+      <if test="createuserid != null" >
+        createUserId,
+      </if>
+      <if test="createtime != null" >
+        createTime,
+      </if>
+      <if test="updatetime != null" >
+        updateTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="scriptid != null" >
+        #{scriptid,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptname != null" >
+        #{scriptname,jdbcType=VARCHAR},
+      </if>
+      <if test="scripttype != null" >
+        #{scripttype,jdbcType=VARCHAR},
+      </if>
+      <if test="scripturl != null" >
+        #{scripturl,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptstate != null" >
+        #{scriptstate,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        #{updatetime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="map" >
+    update file_comparison_script
+    <set >
+      <if test="scriptname != null" >
+        scriptName = #{scriptname,jdbcType=VARCHAR},
+      </if>
+      <if test="scripttype != null" >
+        scriptType = #{scripttype,jdbcType=VARCHAR},
+      </if>
+      <if test="scripturl != null" >
+        scriptUrl = #{scripturl,jdbcType=VARCHAR},
+      </if>
+      <if test="scriptstate != null" >
+        scriptState = #{scriptstate,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        createUserId = #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createTime = #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        updateTime = #{updatetime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where scriptId = #{scriptid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="map" >
+    update file_comparison_script
+    set scriptName = #{scriptname,jdbcType=VARCHAR},
+      scriptType = #{scripttype,jdbcType=VARCHAR},
+      scriptUrl = #{scripturl,jdbcType=VARCHAR},
+      scriptState = #{scriptstate,jdbcType=VARCHAR},
+      createUserId = #{createuserid,jdbcType=VARCHAR},
+      createTime = #{createtime,jdbcType=VARCHAR},
+      updateTime = #{updatetime,jdbcType=VARCHAR}
+    where scriptId = #{scriptid,jdbcType=VARCHAR}
+  </update>
+</mapper>

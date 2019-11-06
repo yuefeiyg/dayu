@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.LogUserBehaviorMapper" >
+  <insert id="batchInsertLogUserBehavior" parameterType="java.util.List" >
+    insert into log_user_behavior
+    (logtype, info, createtime, userid)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.logtype,jdbcType=VARCHAR}, #{item.info,jdbcType=VARCHAR},
+      #{item.createtime,jdbcType=VARCHAR}, #{item.userid,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+  <insert id="insertLogUseBehaviorSelective" parameterType="map" >
+    insert into log_user_behavior
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="logtype != null" >
+        logtype,
+      </if>
+      <if test="info != null" >
+        info,
+      </if>
+
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="userid != null" >
+        userid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="logtype != null" >
+        #{logtype,jdbcType=VARCHAR},
+      </if>
+      <if test="info != null" >
+        #{info,jdbcType=VARCHAR},
+      </if>
+
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

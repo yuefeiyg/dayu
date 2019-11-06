@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationObjectRelationInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.AnnotationObjectRelationInfo" >
+    <id column="relationdataid" property="relationdataid" jdbcType="VARCHAR" />
+    <result column="objectdataid" property="objectdataid" jdbcType="VARCHAR" />
+    <result column="labelid" property="labelid" jdbcType="VARCHAR" />
+    <result column="fromitemid" property="fromitemid" jdbcType="VARCHAR" />
+    <result column="toitemid" property="toitemid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    relationdataid, objectdataid, labelid, fromitemid, toitemid
+  </sql>
+
+  <select id="getRelateLableDatasByRelationIds" parameterType="java.util.List" resultType="map">
+      SELECT aori.*,tad.taskid,tad.sourceid,tad.dataid
+      FROM annotation_object_relation_info aori
+      INNER JOIN task_annotation_data tad ON tad.objectdataid = aori.objectdataid
+      WHERE aori.relationdataid in
+    <foreach collection="list" item="item" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+
+  </select>
+
+  <!--根据objectdataid批量删除-->
+  <delete id="batchDeleteRelationsByObjectDataId" parameterType="java.util.List">
+    delete from annotation_object_relation_info where objectdataid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+  <!--根据关联关系relationdataid批量删除-->
+  <delete id="batchDeleteById" parameterType="java.util.List">
+    delete from annotation_object_relation_info where relationdataid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+  <!--批量插入关联关系-->
+  <insert id="batchInsertRelations" parameterType="java.util.List">
+    insert into annotation_object_relation_info
+    (relationdataid, objectdataid, labelid, fromitemid, toitemid)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (
+      #{item.relationdataid,jdbcType=VARCHAR},
+      #{item.objectdataid,jdbcType=VARCHAR},
+      #{item.labelid,jdbcType=VARCHAR},
+      #{item.fromitemid,jdbcType=VARCHAR},
+      #{item.toitemid,jdbcType=VARCHAR}
+      )
+    </foreach>
+  </insert>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from annotation_object_relation_info
+    where relationdataid = #{relationdataid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from annotation_object_relation_info
+    where relationdataid = #{relationdataid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.AnnotationObjectRelationInfo" >
+    insert into annotation_object_relation_info (relationdataid, objectdataid, labelid, 
+      fromitemid, toitemid)
+    values (#{relationdataid,jdbcType=VARCHAR}, #{objectdataid,jdbcType=VARCHAR}, #{labelid,jdbcType=VARCHAR}, 
+      #{fromitemid,jdbcType=VARCHAR}, #{toitemid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.AnnotationObjectRelationInfo" >
+    insert into annotation_object_relation_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="relationdataid != null" >
+        relationdataid,
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="labelid != null" >
+        labelid,
+      </if>
+      <if test="fromitemid != null" >
+        fromitemid,
+      </if>
+      <if test="toitemid != null" >
+        toitemid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="relationdataid != null" >
+        #{relationdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="fromitemid != null" >
+        #{fromitemid,jdbcType=VARCHAR},
+      </if>
+      <if test="toitemid != null" >
+        #{toitemid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.AnnotationObjectRelationInfo" >
+    update annotation_object_relation_info
+    <set >
+      <if test="objectdataid != null" >
+        objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        labelid = #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="fromitemid != null" >
+        fromitemid = #{fromitemid,jdbcType=VARCHAR},
+      </if>
+      <if test="toitemid != null" >
+        toitemid = #{toitemid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where relationdataid = #{relationdataid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.AnnotationObjectRelationInfo" >
+    update annotation_object_relation_info
+    set objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      labelid = #{labelid,jdbcType=VARCHAR},
+      fromitemid = #{fromitemid,jdbcType=VARCHAR},
+      toitemid = #{toitemid,jdbcType=VARCHAR}
+    where relationdataid = #{relationdataid,jdbcType=VARCHAR}
+  </update>
+
+  <!--批量插入标注对象关系属性信息-->
+  <insert id="batchInsert" parameterType="java.util.List" >
+    insert into annotation_object_relation_info
+    values
+    <foreach collection ="list" item="taskAnnoObjectRelationInfo" index= "index" separator =",">
+      (
+      #{taskAnnoObjectRelationInfo.relationdataid}, #{taskAnnoObjectRelationInfo.objectdataid},
+      #{taskAnnoObjectRelationInfo.labelid},#{taskAnnoObjectRelationInfo.fromitemid},
+      #{taskAnnoObjectRelationInfo.toitemid}
+      )
+    </foreach>
+  </insert>
+
+  <!--根据任务id和文本切分最小单元的id（即 contentid）查询标注数据信息-->
+  <select id="getRelateLableDataItemList" resultType="map" parameterType="map">
+     SELECT aori.relationdataid,aori.fromitemid,aori.objectdataid,aori.toitemid,label.labelname,label.shortcut as labelshortcut,label.colour  as labelcolour,
+        label.symbol as labelsymbol,label.`code` as labelcode,tad.dataid AS contentid
+     FROM
+     task_annotation_data tad INNER JOIN annotation_object_relation_info aori ON tad.objectdataid = aori.objectdataid
+    INNER JOIN annotation_label label ON aori.labelid = label.labelid
+    WHERE
+    tad.taskid =  #{taskid}
+    and
+    tad.dataid =#{contentid}
+  </select>
+
+  <select id="getRelateLableDataItems" parameterType="map" resultType="map">
+    SELECT aori.*
+    FROM task_annotation_data tad
+    RIGHT JOIN annotation_object_relation_info aori ON aori.objectdataid = tad.objectdataid
+    WHERE tad.taskid = #{taskid,jdbcType=VARCHAR}
+    AND tad.sourceid =#{sourceid,jdbcType=VARCHAR}
+    AND tad.dataid = #{dataid,jdbcType=VARCHAR}
+
+  </select>
+  <!--根据任务id和sourceid查询图片的管理关系标注记录-->
+  <select id="getPicRelateLableDataItems" parameterType="map" resultType="map">
+    SELECT aori.*
+    FROM task_annotation_data tad
+    LEFT JOIN annotation_object_relation_info aori ON aori.objectdataid = tad.objectdataid
+    WHERE tad.taskid = #{taskid,jdbcType=VARCHAR}
+    AND tad.sourceid =#{sourceid,jdbcType=VARCHAR}
+  </select>
+
+  <delete id="deleteByTaskIdAndSourceId" parameterType="map">
+    delete from annotation_object_relation_info
+    where objectdataid in (select objectdataid from task_annotation_data where
+    taskid = #{taskid}
+    and
+    sourceid in (${dataids})
+    )
+
+  </delete>
+
+</mapper>

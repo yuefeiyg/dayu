@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationLabelRelationRuleMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.AnnotationLabelRelationRule" >
+    <result column="labelid" property="labelid" jdbcType="VARCHAR" />
+    <result column="templateid" property="templateid" jdbcType="VARCHAR" />
+    <result column="arg1type" property="arg1type" jdbcType="VARCHAR" />
+    <result column="arg2type" property="arg2type" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    labelid, arg1type, arg2type
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from annotation_label_relation_rule
+    where labelid = #{labelid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from annotation_label_relation_rule
+    where labelid = #{labelid,jdbcType=VARCHAR}
+  </delete>
+  <!--批量添加-->
+  <insert id="insertLabelRelationRuleBatch" parameterType="java.util.List" >
+    insert into annotation_label_relation_rule
+    values
+    <foreach collection ="list" item="labelrule" index= "index" separator =",">
+    (
+      #{labelrule.labelid,jdbcType=VARCHAR},#{labelrule.templateid,jdbcType=VARCHAR},
+      #{labelrule.arg1type,jdbcType=VARCHAR},#{labelrule.arg2type,jdbcType=VARCHAR}
+    )
+    </foreach>
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.AnnotationLabelRelationRule" >
+    insert into annotation_label_relation_rule
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="labelid != null" >
+        labelid,
+      </if>
+      <if test="templateid != null" >
+        templateid,
+      </if>
+      <if test="arg1type != null" >
+        arg1type,
+      </if>
+      <if test="arg2type != null" >
+        arg2type,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="labelid != null" >
+        #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="templateid != null" >
+        #{templateid,jdbcType=VARCHAR},
+      </if>
+      <if test="arg1type != null" >
+        #{arg1type,jdbcType=VARCHAR},
+      </if>
+      <if test="arg2type != null" >
+        #{arg2type,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.AnnotationLabelRelationRule" >
+    update annotation_label_relation_rule
+    <set >
+      <if test="arg1type != null" >
+        arg1type = #{arg1type,jdbcType=VARCHAR},
+      </if>
+      <if test="arg2type != null" >
+        arg2type = #{arg2type,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where labelid = #{labelid,jdbcType=VARCHAR}
+  </update>
+
+</mapper>

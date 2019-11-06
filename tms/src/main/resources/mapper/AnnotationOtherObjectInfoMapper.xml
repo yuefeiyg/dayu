@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationOtherObjectInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.AnnotationOtherObjectInfo" >
+    <id column="dataitemid" property="dataitemid" jdbcType="VARCHAR" />
+    <result column="itemid" property="itemid" jdbcType="VARCHAR" />
+    <result column="objectdataid" property="objectdataid" jdbcType="VARCHAR" />
+    <result column="datainfo" property="datainfo" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="VARCHAR" />
+    <result column="annotationtype" property="annotationtype" jdbcType="VARCHAR"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    dataitemid, itemid, objectdataid, datainfo, createtime,annotationtype
+  </sql>
+
+  <!--1：根据 itemid 批量删除数据记录-->
+  <delete id="batchDeleteByItemId" parameterType="java.util.List">
+    delete from annotation_other_object_info where itemid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <!--批量删除item-->
+  <delete id="batchDeleteById" parameterType="java.util.List" >
+    delete from annotation_other_object_info where itemid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <delete id="batchDeleteByObjectDataId" parameterType="java.util.List">
+    delete from annotation_other_object_info where objectdataid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+  <!-- 2：批量插入标注对象信息-->
+  <insert id="batchInsertItems" parameterType="java.util.List">
+    insert into annotation_other_object_info
+    (dataitemid, itemid, objectdataid, datainfo, createtime,annotationtype)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.dataitemid,jdbcType=VARCHAR},
+      #{item.itemid,jdbcType=VARCHAR},
+      #{item.objectdataid,jdbcType=VARCHAR},
+      #{item.datainfo,jdbcType=VARCHAR},
+      #{item.createtime,jdbcType=VARCHAR},
+      #{item.annotationtype,jdbcType=VARCHAR}
+      )
+    </foreach>
+  </insert>
+
+  <delete id="deleteByTaskIdAndSourceId" parameterType="map">
+    delete from annotation_object_info
+    where objectdataid in (select objectdataid from task_annotation_data where
+    taskid = #{taskid}
+    and
+    sourceid in (${dataids})
+    )
+
+  </delete>
+
+  <!--批量插入标注对象属性信息-->
+  <insert id="batchInsert" parameterType="java.util.List" >
+    insert into annotation_other_object_info
+    (dataitemid, itemid, objectdataid, datainfo, createtime,annotationtype)
+    values
+    <foreach collection ="list" item="taskAnnoObjectInfo" index= "index" separator =",">
+      (
+      #{taskAnnoObjectInfo.dataitemid}, #{taskAnnoObjectInfo.itemid},
+      #{taskAnnoObjectInfo.objectdataid},#{taskAnnoObjectInfo.datainfo},
+      #{taskAnnoObjectInfo.createtime},#{taskAnnoObjectInfo.annotationtype}
+      )
+    </foreach>
+  </insert>
+  <!--批量更新-->
+  <update id="batchUpdateItmes" parameterType="java.util.List" >
+    <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+      update annotation_other_object_info
+      <set>
+        datainfo=#{item.datainfo}
+      </set>
+      where dataitemid = #{item.dataitemid,jdbcType=VARCHAR}
+    </foreach>
+  </update>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from annotation_other_object_info
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.AnnotationOtherObjectInfo" >
+    insert into annotation_other_object_info (dataitemid, itemid, objectdataid,
+      datainfo, createtime,annotationtype)
+    values (#{dataitemid,jdbcType=VARCHAR}, #{itemid,jdbcType=VARCHAR}, #{objectdataid,jdbcType=VARCHAR},
+      #{datainfo,jdbcType=VARCHAR}, #{createtime,jdbcType=VARCHAR},#{annotationtype,jdbcType=VARCHAR})
+
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.AnnotationOtherObjectInfo" >
+    insert into annotation_other_object_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="dataitemid != null" >
+        dataitemid,
+      </if>
+      <if test="itemid != null" >
+        itemid,
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="datainfo != null" >
+        datainfo,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="annotationtype != null" >
+        annotationtype,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="dataitemid != null" >
+        #{dataitemid,jdbcType=VARCHAR},
+      </if>
+      <if test="itemid != null" >
+        #{itemid,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="datainfo != null" >
+        #{datainfo,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="annotationtype != null" >
+        #{annotationtype,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.AnnotationOtherObjectInfo" >
+    update annotation_other_object_info
+    <set >
+      <if test="itemid != null" >
+        itemid = #{itemid,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="datainfo != null" >
+        datainfo = #{datainfo,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createtime = #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="annotationtype != null" >
+        annotationtype = #{annotationtype,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.AnnotationOtherObjectInfo" >
+    update annotation_other_object_info
+    set itemid = #{itemid,jdbcType=VARCHAR},
+      objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      datainfo = #{datainfo,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=VARCHAR},
+      annotationtype = #{annotationtype}
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </update>
+  <select id="getLableDataItemList" parameterType="map" resultType="map">
+    SELECT
+        aoi.dataitemid,aoi.itemid,aoi.objectdataid,aoi.datainfo,aoi.createtime,aoi.annotationtype
+    FROM
+      task_annotation_data tad INNER JOIN annotation_other_object_info aoi ON tad.objectdataid = aoi.objectdataid
+    WHERE
+      tad.taskid = #{taskid}
+    and
+      tad.dataid = #{contentid}
+   ORDER BY aoi.createtime
+  </select>
+
+  <select id="getItemsByLabel" resultType="map" parameterType="map">
+    SELECT
+        aoi.dataitemid,aoi.itemid,aoi.objectdataid,aoi.datainfo,aoi.createtime,aoi.annotationtype
+    FROM
+      task_annotation_data tad INNER JOIN annotation_other_object_info aoi ON tad.objectdataid = aoi.objectdataid
+    WHERE
+      tad.taskid = #{taskid}
+    <if test="objectdataid != null and objectdataid != ''">
+      and
+      aoi.objectdataid = #{objectdataid}
+    </if>
+   ORDER BY aoi.createtime
+  </select>
+
+
+  <select id="getObjectItemListByTaskid" resultType="map" parameterType="map">
+   SELECT aooi.dataitemid,aooi.itemid,aooi.objectdataid,aooi.datainfo,aooi.createtime,aooi.annotationtype
+    FROM annotation_other_object_info aooi
+    INNER JOIN task_annotation_data tad ON aooi.objectdataid = tad.objectdataid
+    WHERE
+    tad.taskid = #{taskid}
+  </select>
+
+  <select id="getObjectItemByIndexid" resultType="map" parameterType="map">
+    SELECT aooi.dataitemid,aooi.itemid,aooi.objectdataid,aooi.datainfo,aooi.createtime,aooi.annotationtype
+    FROM annotation_other_object_info aooi
+    INNER JOIN task_annotation_data tad ON aooi.objectdataid = tad.objectdataid
+    INNER JOIN data_info_index dii ON dii.contentid = tad.dataid
+    WHERE
+    dii.dataindexid = #{dataindexid}  AND tad.taskid = #{taskid}
+  </select>
+
+
+</mapper>

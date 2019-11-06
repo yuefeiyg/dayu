@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.TaskAttachInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.TaskAttachInfo" >
+    <id column="attachmentid" property="attachmentid" jdbcType="VARCHAR" />
+    <result column="attachmentname" property="attachmentname" jdbcType="VARCHAR" />
+    <result column="attachmenttype" property="attachmenttype" jdbcType="VARCHAR" />
+    <result column="path" property="path" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    attachmentid, attachmentname, attachmenttype, path, taskid
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from task_attach_info
+    where attachmentid = #{attachmentid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from task_attach_info
+    where attachmentid = #{attachmentid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.TaskAttachInfo" >
+    insert into task_attach_info (attachmentid, attachmentname, attachmenttype, 
+      path, taskid)
+    values (#{attachmentid,jdbcType=VARCHAR}, #{attachmentname,jdbcType=VARCHAR}, #{attachmenttype,jdbcType=VARCHAR}, 
+      #{path,jdbcType=VARCHAR}, #{taskid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.TaskAttachInfo" >
+    insert into task_attach_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="attachmentid != null" >
+        attachmentid,
+      </if>
+      <if test="attachmentname != null" >
+        attachmentname,
+      </if>
+      <if test="attachmenttype != null" >
+        attachmenttype,
+      </if>
+      <if test="path != null" >
+        path,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="attachmentid != null" >
+        #{attachmentid,jdbcType=VARCHAR},
+      </if>
+      <if test="attachmentname != null" >
+        #{attachmentname,jdbcType=VARCHAR},
+      </if>
+      <if test="attachmenttype != null" >
+        #{attachmenttype,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.TaskAttachInfo" >
+    update task_attach_info
+    <set >
+      <if test="attachmentname != null" >
+        attachmentname = #{attachmentname,jdbcType=VARCHAR},
+      </if>
+      <if test="attachmenttype != null" >
+        attachmenttype = #{attachmenttype,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        path = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        taskid = #{taskid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where attachmentid = #{attachmentid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.TaskAttachInfo" >
+    update task_attach_info
+    set attachmentname = #{attachmentname,jdbcType=VARCHAR},
+      attachmenttype = #{attachmenttype,jdbcType=VARCHAR},
+      path = #{path,jdbcType=VARCHAR},
+      taskid = #{taskid,jdbcType=VARCHAR}
+    where attachmentid = #{attachmentid,jdbcType=VARCHAR}
+  </update>
+
+  <!--批量插入附件信息-->
+  <insert id="batchInsert" parameterType="java.util.List" >
+    insert into task_attach_info
+    values
+    <foreach collection ="list" item="taskAttachInfo" index= "index" separator =",">
+      (
+      #{taskAttachInfo.attachmentid}, #{taskAttachInfo.attachmentname},
+      #{taskAttachInfo.attachmenttype},#{taskAttachInfo.path},
+      #{taskAttachInfo.taskid}
+      )
+    </foreach>
+  </insert>
+
+  <select id="getDatasByTaskId" parameterType="java.lang.String" resultType="map">
+    select atta.attachmentid,atta.attachmentname,atta.path,atta.attachmenttype,di.dsid,dsi.dsname from
+    task_attach_info atta
+    LEFT JOIN data_info di ON atta.attachmentid= di.dataid
+	LEFT JOIN dataset_info dsi ON di.dsid = dsi.dsid
+    WHERE
+    atta.taskid  =  #{taskId} and atta.attachmenttype = 'data'
+  </select>
+
+  <select id="getDataIdsByTaskId" parameterType="java.lang.String" resultType="java.lang.String">
+    select atta.attachmentid from
+    task_attach_info atta
+    WHERE
+    atta.taskid  =  #{taskId} and (atta.attachmenttype = 'data' or atta.attachmenttype = 'att')
+  </select>
+
+  <select id="getTypeDataByTaskId" parameterType="java.lang.String" resultType="java.lang.String">
+    select atta.attachmentid from
+    task_attach_info atta
+    WHERE
+    atta.taskid  =  #{taskId} and atta.attachmenttype = 'data'
+  </select>
+
+  <delete id="deleteByTaskIdAndAttachmentid" parameterType="map">
+    delete from task_attach_info
+    where
+    taskid = #{taskid}
+    and
+    attachmentid in ( ${dataids} )
+  </delete>
+
+  <select id="getDataByTaskIdAndDataId" parameterType="map" resultType="map">
+    select atta.attachmentid,atta.attachmentname,atta.path,atta.attachmenttype from
+    task_attach_info atta
+    WHERE
+    atta.taskid  =  #{taskid} and atta.attachmentid = #{dataid}
+  </select>
+
+</mapper>

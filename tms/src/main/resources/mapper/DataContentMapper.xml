@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.DataContentMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.DataContent" >
+    <id column="contentid" property="contentid" jdbcType="VARCHAR" />
+    <result column="dataid" property="dataid" jdbcType="VARCHAR" />
+    <result column="pn" property="pn" jdbcType="VARCHAR" />
+    <result column="sn" property="sn" jdbcType="VARCHAR" />
+    <result column="size" property="size" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.blcultra.model.DataContentWithBLOBs" extends="BaseResultMap" >
+    <result column="content" property="content" jdbcType="LONGVARCHAR" />
+    <result column="anninfos" property="anninfos" jdbcType="LONGVARCHAR" />
+    <result column="annrelateinfos" property="annrelateinfos" jdbcType="LONGVARCHAR"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    contentid, dataid, pn, sn, size
+  </sql>
+  <sql id="Blob_Column_List" >
+    content, anninfos, annrelateinfos
+  </sql>
+  <insert id="batchInsertDataContent" parameterType="java.util.List">
+    insert into data_content
+    (contentid,dataid,pn,sn,size,content,anninfos,annrelateinfos)
+    values
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (
+      #{item.contentid}, #{item.dataid},
+      #{item.pn},#{item.sn},
+      #{item.size}, #{item.content},
+      #{item.anninfos},
+      #{item.annrelateinfos}
+      )
+    </foreach>
+  </insert>
+
+
+  <select id="getContentDataByDataId" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+    select
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from data_content
+    where dataid = #{dataid,jdbcType=VARCHAR}
+    ORDER  BY  sn+0 ASC
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from data_content
+    where contentid = #{contentid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from data_content
+    where contentid = #{contentid,jdbcType=VARCHAR}
+  </delete>
+  <!--批量插入文本数据-->
+  <insert id="addDataContentBatch" parameterType="java.util.List" >
+    insert into data_content
+    values
+    <foreach collection ="list" item="datainfo" index= "index" separator =",">
+      (
+      #{datainfo.contentid}, #{datainfo.dataid},
+      #{datainfo.content},#{datainfo.pn},
+      #{datainfo.sn}, #{datainfo.anninfos},
+      #{datainfo.size},#{datainfo.annrelateinfos}
+      )
+    </foreach>
+  </insert>
+
+
+  <!--根据任务id查询文本信息-->
+  <select id="getContents" parameterType="map" resultType="map">
+    select
+        dc.contentid,dc.dataid,dc.content,dc.pn,dc.sn,dc.anninfos,dc.annrelateinfos ,size,tad.datatype,tad.labeltype,tad.objectdataid,tad.taskid,
+        tad.relation
+    from data_content dc
+    INNER JOIN task_annotation_data tad ON dc.contentid = tad.dataid
+    WHERE 1=1
+    <if test="textid!= null">
+      AND dc.dataid = #{textid,jdbcType=VARCHAR}
+    </if>
+    <if test="pn!= null">
+      AND ds.pn = #{pn,jdbcType=VARCHAR}
+    </if>
+    <if test="taskid !=null">
+      and tad.taskid = #{taskid,jdbcType=VARCHAR}
+    </if>
+    ORDER BY dc.dataid,CONVERT(dc.sn,SIGNED) ASC
+  </select>
+
+
+  <insert id="insertSelective" parameterType="map" >
+    insert into data_content
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="contentid != null" >
+        contentid,
+      </if>
+      <if test="dataid != null" >
+        dataid,
+      </if>
+      <if test="pn != null" >
+        pn,
+      </if>
+      <if test="sn != null" >
+        sn,
+      </if>
+      <if test="size != null" >
+        size,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+      <if test="anninfos != null" >
+        anninfos,
+      </if>
+      <if test="annrelateinfos != null">
+        annrelateinfos,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="contentid != null" >
+        #{contentid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataid != null" >
+        #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="pn != null" >
+        #{pn,jdbcType=VARCHAR},
+      </if>
+      <if test="sn != null" >
+        #{sn,jdbcType=VARCHAR},
+      </if>
+      <if test="size != null" >
+        #{size,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="anninfos != null" >
+        #{anninfos,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="annrelateinfos != null" >
+        #{annrelateinfos,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.DataContentWithBLOBs" >
+    update data_content
+    <set >
+      <if test="dataid != null" >
+        dataid = #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="pn != null" >
+        pn = #{pn,jdbcType=VARCHAR},
+      </if>
+      <if test="sn != null" >
+        sn = #{sn,jdbcType=VARCHAR},
+      </if>
+      <if test="size != null" >
+        size = #{size,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="anninfos != null" >
+        anninfos = #{anninfos,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="annrelateinfos != null" >
+        annrelateinfos = #{annrelateinfos,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where contentid = #{contentid,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.DataContent" >
+    update data_content
+    set dataid = #{dataid,jdbcType=VARCHAR},
+      pn = #{pn,jdbcType=VARCHAR},
+      sn = #{sn,jdbcType=VARCHAR},
+      size = #{size,jdbcType=VARCHAR}
+    where contentid = #{contentid,jdbcType=VARCHAR}
+  </update>
+
+  <!--根据索引ID查询文本内容-->
+  <select id="getDataByIndexId" parameterType="map" resultType="map">
+    select
+        dc.contentid,dc.dataid,dc.content,dc.pn,dc.sn,dc.anninfos,`size`,tad.datatype,tad.labeltype,tad.objectdataid,tad.taskid,
+        dii.dataindexid,dii.dataindexname,dii.sequence
+    from data_content dc
+    INNER JOIN task_annotation_data tad ON dc.contentid = tad.dataid
+    INNER JOIN data_info_index dii ON dc.contentid = dii.contentid
+    WHERE dii.dataindexid = #{dataindexid}  AND tad.taskid = #{taskid}
+  </select>
+</mapper>

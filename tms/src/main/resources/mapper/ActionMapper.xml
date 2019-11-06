@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.ActionMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.Action" >
+    <id column="actionid" property="actionid" jdbcType="VARCHAR" />
+    <result column="action" property="action" jdbcType="VARCHAR" />
+    <result column="actionname" property="actionname" jdbcType="VARCHAR" />
+    <result column="actionurl" property="actionurl" jdbcType="VARCHAR" />
+    <result column="actionredirecturl" property="actionredirecturl" jdbcType="VARCHAR" />
+    <result column="moudle" property="moudle" jdbcType="VARCHAR" />
+    <result column="order" property="order" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    actionid, action, actionname, actionurl, actionredirecturl, moudle, 'order'
+  </sql>
+
+  <select id="getActionMoudles" resultType="java.lang.String">
+    SELECT DISTINCT action.moudle
+    FROM action
+  </select>
+  <select id="getActionsByMoudle" parameterType="java.lang.String" resultType="map">
+    SELECT actionid, action, actionname, actionurl, actionredirecturl, moudle,actionicon,actiontype
+    FROM action
+    WHERE moudle = #{moudle,jdbcType=VARCHAR}
+    ORDER BY 'order' ASC
+  </select>
+  
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from action
+    where actionid = #{actionid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from action
+    where actionid = #{actionid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.Action" >
+    insert into action (actionid, action, actionname, 
+      actionurl, actionredirecturl, moudle, 
+      order)
+    values (#{actionid,jdbcType=VARCHAR}, #{action,jdbcType=VARCHAR}, #{actionname,jdbcType=VARCHAR}, 
+      #{actionurl,jdbcType=VARCHAR}, #{actionredirecturl,jdbcType=VARCHAR}, #{moudle,jdbcType=VARCHAR}, 
+      #{order,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.Action" >
+    insert into action
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="actionid != null" >
+        actionid,
+      </if>
+      <if test="action != null" >
+        action,
+      </if>
+      <if test="actionname != null" >
+        actionname,
+      </if>
+      <if test="actionurl != null" >
+        actionurl,
+      </if>
+      <if test="actionredirecturl != null" >
+        actionredirecturl,
+      </if>
+      <if test="moudle != null" >
+        moudle,
+      </if>
+      <if test="order != null" >
+        order,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="actionid != null" >
+        #{actionid,jdbcType=VARCHAR},
+      </if>
+      <if test="action != null" >
+        #{action,jdbcType=VARCHAR},
+      </if>
+      <if test="actionname != null" >
+        #{actionname,jdbcType=VARCHAR},
+      </if>
+      <if test="actionurl != null" >
+        #{actionurl,jdbcType=VARCHAR},
+      </if>
+      <if test="actionredirecturl != null" >
+        #{actionredirecturl,jdbcType=VARCHAR},
+      </if>
+      <if test="moudle != null" >
+        #{moudle,jdbcType=VARCHAR},
+      </if>
+      <if test="order != null" >
+        #{order,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.Action" >
+    update action
+    <set >
+      <if test="action != null" >
+        action = #{action,jdbcType=VARCHAR},
+      </if>
+      <if test="actionname != null" >
+        actionname = #{actionname,jdbcType=VARCHAR},
+      </if>
+      <if test="actionurl != null" >
+        actionurl = #{actionurl,jdbcType=VARCHAR},
+      </if>
+      <if test="actionredirecturl != null" >
+        actionredirecturl = #{actionredirecturl,jdbcType=VARCHAR},
+      </if>
+      <if test="moudle != null" >
+        moudle = #{moudle,jdbcType=VARCHAR},
+      </if>
+      <if test="order != null" >
+        order = #{order,jdbcType=INTEGER},
+      </if>
+    </set>
+    where actionid = #{actionid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.Action" >
+    update action
+    set action = #{action,jdbcType=VARCHAR},
+      actionname = #{actionname,jdbcType=VARCHAR},
+      actionurl = #{actionurl,jdbcType=VARCHAR},
+      actionredirecturl = #{actionredirecturl,jdbcType=VARCHAR},
+      moudle = #{moudle,jdbcType=VARCHAR},
+      order = #{order,jdbcType=INTEGER}
+    where actionid = #{actionid,jdbcType=VARCHAR}
+  </update>
+</mapper>

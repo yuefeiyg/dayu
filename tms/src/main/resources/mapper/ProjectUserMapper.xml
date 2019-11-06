@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.ProjectUserMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.ProjectUser" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="projectid" property="projectid" jdbcType="VARCHAR" />
+    <result column="member" property="member" jdbcType="VARCHAR" />
+    <result column="prolekey" property="prolekey" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, projectid, member, prolekey
+  </sql>
+
+  <select id="getUserInfosByProjectids" parameterType="java.util.List" resultType="map">
+    SELECT
+    DISTINCT pus.member AS  userid , u.username
+    FROM
+    project_user pus
+    LEFT JOIN `user` u ON  u.userid = pus.member
+    WHERE projectid IN
+    <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
+
+
+  <select id="getUserInfosByProjectid" parameterType="java.lang.String" resultType="map">
+    SELECT
+    DISTINCT pus.member AS  userid , u.username
+    FROM
+    project_user pus
+    LEFT JOIN `user` u ON  u.userid = pus.member
+    WHERE projectid = #{projectid,jdbcType=VARCHAR}
+  </select>
+
+  <select id="getProjectIdsByUserId" parameterType="java.lang.String" resultType="map">
+    SELECT pus.projectid ,pin.projectname
+    FROM project_user pus
+    LEFT JOIN project_info pin ON pin.projectid = pus.projectid
+    WHERE pus.member = #{member,jdbcType=VARCHAR}
+    GROUP BY pus.projectid
+  </select>
+
+  <!--根据用户id，查询项目用户的业务角色为pmanager的用户信息-->
+  <select id="getPUInfoByUserId" parameterType="java.lang.String" resultType="map">
+      SELECT pus.projectid,pus.member,pus.prolekey,u.username
+      FROM project_user pus
+      LEFT JOIN `user` u ON  u.userid = pus.member
+      WHERE member = #{userid,jdbcType=VARCHAR}
+      AND prolekey = 'pmanager'
+  </select>
+
+  <!-- 根据项目的id列表删除项目-用户关联表中的信息 -->
+  <delete id="deleteByProjectIds" parameterType="java.util.List">
+    DELETE  FROM project_user
+    WHERE projectid IN
+    <foreach collection="list"  item="item" open="("
+             separator="," close=")">
+      <if test="item!=null and item !=''">
+        #{item}
+      </if>
+    </foreach>
+  </delete>
+
+  <delete id="deleteByProjectId" parameterType="java.lang.String">
+    DELETE  FROM project_user
+    WHERE projectid = #{projectid,jdbcType=VARCHAR}
+  </delete>
+
+  <!--批量插入项目成员-->
+  <insert id="insertProjectUserList" parameterType="java.util.List" >
+    insert into project_user (projectid, member, prolekey)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.projectid,jdbcType=VARCHAR}, #{item.member,jdbcType=INTEGER}, #{item.prolekey,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from project_user
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from project_user
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.ProjectUser" >
+    insert into project_user (id, projectid, member, jdbcType=VARCHAR
+      )
+    values (#{id,jdbcType=INTEGER}, #{projectid,jdbcType=VARCHAR}, #{member,jdbcType=VARCHAR}, #{prolekey,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.ProjectUser" >
+    insert into project_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="projectid != null" >
+        projectid,
+      </if>
+      <if test="member != null" >
+        member,
+      </if>
+      <if test="prolekey != null">
+        prolekey,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="projectid != null" >
+        #{projectid,jdbcType=VARCHAR},
+      </if>
+      <if test="member != null" >
+        #{member,jdbcType=VARCHAR},
+      </if>
+      <if test="prolekey != null">
+        #{prolekey,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.ProjectUser" >
+    update project_user
+    <set >
+      <if test="projectid != null" >
+        projectid = #{projectid,jdbcType=VARCHAR},
+      </if>
+      <if test="member != null" >
+        member = #{member,jdbcType=VARCHAR},
+      </if>
+      <if test="prolekey != null">
+        prolekey = #{prolekey,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.ProjectUser" >
+    update project_user
+    set projectid = #{projectid,jdbcType=VARCHAR},
+      member = #{member,jdbcType=VARCHAR},prolekey= #{prolekey,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+<!--根据项目ID查询项目成员-->
+  <select id="getProjectUsersByProjectId" parameterType="java.lang.String" resultType="map">
+    SELECT DISTINCT pu.member as  userid,u.username FROM project_user pu
+    INNER JOIN `user` u ON pu.member = u.userid
+     WHERE pu.projectid = #{projectid}
+  </select>
+
+  <select id="getProjectUserByUserId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select projectid, member, prolekey
+    from project_user pu
+    WHERE pu.member = #{userid,jdbcType=VARCHAR}
+  </select>
+
+  <insert id="batchInsertProjcetUser" parameterType="java.util.List">
+    insert into project_user (member,prolekey,projectid)
+    values
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (
+      #{item.member,jdbcType=VARCHAR},
+      #{item.prolekey,jdbcType=VARCHAR},
+      #{item.projectid,jdbcType=VARCHAR}
+      )
+    </foreach>
+
+  </insert>
+
+
+  <delete id="deleteByProjectid"  parameterType="java.lang.String" >
+      DELETE FROM project_user WHERE projectid = #{projectid}
+  </delete>
+
+  <select id="checkPmanager" resultType="int" parameterType="java.lang.String">
+    SELECT count(1) FROM project_user WHERE member = #{userid} AND prolekey = 'pmanager'
+  </select>
+
+  <!--根据项目ID查询项目成员-->
+  <select id="getProjectAuditorByTaskId" parameterType="java.lang.String" resultType="java.lang.String">
+    SELECT ap.auditorid FROM auditor_performer ap, task_info ti
+    WHERE ti.taskid = #{taskid} and ti.projectid = ap.projectid
+    and ti.performerid = ap.performerid
+  </select>
+
+</mapper>

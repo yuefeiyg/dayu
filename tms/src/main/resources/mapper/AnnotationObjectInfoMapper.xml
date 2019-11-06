@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationObjectInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.AnnotationObjectInfo" >
+    <id column="dataitemid" property="dataitemid" jdbcType="VARCHAR" />
+    <result column="itemid" property="itemid" jdbcType="VARCHAR" />
+    <result column="objectdataid" property="objectdataid" jdbcType="VARCHAR" />
+    <result column="item" property="item" jdbcType="VARCHAR" />
+    <result column="labelid" property="labelid" jdbcType="VARCHAR" />
+    <result column="startoffset" property="startoffset" jdbcType="VARCHAR" />
+    <result column="endoffset" property="endoffset" jdbcType="VARCHAR" />
+    <result column="bndbox" property="bndbox" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    dataitemid, itemid, objectdataid, item, labelid, startoffset, endoffset, bndbox
+  </sql>
+    <!--根据dataitemid查询AnnotatioinObjectInfo信息列表-->
+  <select id="getAnnotationDataInfosByDataItemIds" parameterType="java.util.List" resultType="map">
+    SELECT aoi.* , tad.taskid,tad.sourceid,tad.dataid
+    FROM annotation_object_info aoi
+    LEFT JOIN task_annotation_data tad ON tad.objectdataid = aoi.objectdataid
+    WHERE dataitemid in
+    <foreach collection="list" item="item" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+
+  </select>
+
+  <delete id="batchDeleteByObjectDataId" parameterType="java.util.List">
+    delete from annotation_object_info where objectdataid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <!--批量删除item-->
+  <delete id="batchDeleteById" parameterType="java.util.List" >
+    delete from annotation_object_info where itemid in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </delete>
+  <!--批量插入标注对象信息-->
+  <insert id="batchInsertItems" parameterType="java.util.List" >
+    insert into annotation_object_info
+    (dataitemid, itemid, objectdataid, item, labelid, startoffset, endoffset, bndbox,createtime)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.dataitemid,jdbcType=VARCHAR},
+      #{item.itemid,jdbcType=VARCHAR},
+      #{item.objectdataid,jdbcType=VARCHAR},
+      #{item.item,jdbcType=VARCHAR},
+      #{item.labelid,jdbcType=VARCHAR},
+      #{item.startoffset,jdbcType=INTEGER},
+      #{item.endoffset,jdbcType=INTEGER},
+      #{item.bndbox,jdbcType=VARCHAR},
+      #{item.createtime,jdbcType=VARCHAR}
+      )
+    </foreach>
+
+  </insert>
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from annotation_object_info
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from annotation_object_info
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.AnnotationObjectInfo" >
+    insert into annotation_object_info (dataitemid, itemid, objectdataid, 
+      item, labelid, startoffset, 
+      endoffset, bndbox)
+    values (#{dataitemid,jdbcType=VARCHAR}, #{itemid,jdbcType=VARCHAR}, #{objectdataid,jdbcType=VARCHAR}, 
+      #{item,jdbcType=VARCHAR}, #{labelid,jdbcType=VARCHAR}, #{startoffset,jdbcType=VARCHAR}, 
+      #{endoffset,jdbcType=VARCHAR}, #{bndbox,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.AnnotationObjectInfo" >
+    insert into annotation_object_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="dataitemid != null" >
+        dataitemid,
+      </if>
+      <if test="itemid != null" >
+        itemid,
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="item != null" >
+        item,
+      </if>
+      <if test="labelid != null" >
+        labelid,
+      </if>
+      <if test="startoffset != null" >
+        startoffset,
+      </if>
+      <if test="endoffset != null" >
+        endoffset,
+      </if>
+      <if test="bndbox != null" >
+        bndbox,
+      </if>
+
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="dataitemid != null" >
+        #{dataitemid,jdbcType=VARCHAR},
+      </if>
+      <if test="itemid != null" >
+        #{itemid,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="item != null" >
+        #{item,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="startoffset != null" >
+        #{startoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="endoffset != null" >
+        #{endoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="bndbox != null" >
+        #{bndbox,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.AnnotationObjectInfo" >
+    update annotation_object_info
+    <set >
+      <if test="itemid != null" >
+        itemid = #{itemid,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="item != null" >
+        item = #{item,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        labelid = #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="startoffset != null" >
+        startoffset = #{startoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="endoffset != null" >
+        endoffset = #{endoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="bndbox != null" >
+        bndbox = #{bndbox,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.AnnotationObjectInfo" >
+    update annotation_object_info
+    set itemid = #{itemid,jdbcType=VARCHAR},
+      objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      item = #{item,jdbcType=VARCHAR},
+      labelid = #{labelid,jdbcType=VARCHAR},
+      startoffset = #{startoffset,jdbcType=VARCHAR},
+      endoffset = #{endoffset,jdbcType=VARCHAR},
+      bndbox = #{bndbox,jdbcType=VARCHAR}
+    where dataitemid = #{dataitemid,jdbcType=VARCHAR}
+  </update>
+
+
+  <!--批量插入标注对象属性信息-->
+  <insert id="batchInsert" parameterType="java.util.List" >
+    insert into annotation_object_info
+    (dataitemid, itemid, objectdataid, item, labelid, startoffset, endoffset, bndbox,createtime)
+    values
+    <foreach collection ="list" item="taskAnnoObjectInfo" index= "index" separator =",">
+      (
+      #{taskAnnoObjectInfo.dataitemid}, #{taskAnnoObjectInfo.itemid},
+      #{taskAnnoObjectInfo.objectdataid},#{taskAnnoObjectInfo.item},
+      #{taskAnnoObjectInfo.labelid},#{taskAnnoObjectInfo.startoffset},
+      #{taskAnnoObjectInfo.endoffset},#{taskAnnoObjectInfo.bndbox},
+      #{taskAnnoObjectInfo.createtime}
+      )
+    </foreach>
+  </insert>
+
+  <!--根据任务id和文本切分最小单元的id（即 contentid）查询标注数据信息-->
+  <select id="getLableDataItemList" resultType="map" parameterType="map">
+    SELECT
+        aoi.dataitemid,aoi.itemid,aoi.item,aoi.labelid,aoi.startoffset,aoi.endoffset,label.labelname
+    FROM
+      task_annotation_data tad
+      INNER JOIN annotation_object_info aoi ON tad.objectdataid = aoi.objectdataid
+      INNER JOIN annotation_label label ON aoi.labelid = label.labelid
+    WHERE
+      tad.taskid = #{taskid}
+    and
+      tad.dataid = #{contentid}
+   ORDER BY CONVERT(aoi.startoffset,SIGNED) ASC,CONVERT(aoi.endoffset,SIGNED) DESC
+  </select>
+
+
+  <select id="getImgItemList" resultType="map" parameterType="map">
+      select aoi.bndbox
+      FROM annotation_object_info aoi
+      INNER JOIN task_annotation_data tad  ON tad.objectdataid = aoi.objectdataid
+      WHERE tad.taskid = #{taskid}
+      AND tad.sourceid = #{dataid}
+  </select>
+
+  <delete id="deleteByTaskIdAndSourceId" parameterType="map">
+    delete from annotation_object_info
+    where objectdataid in (select objectdataid from task_annotation_data where
+    taskid = #{taskid}
+    and
+    sourceid in (${dataids})
+    )
+
+  </delete>
+
+</mapper>

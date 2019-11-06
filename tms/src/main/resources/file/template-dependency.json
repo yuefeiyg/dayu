@@ -1,0 +1,16 @@
+{
+  "templatename":"依存标注模板",
+  "templatetype":"依存句法标注",
+  "annotationobject":"文本",
+  "annotationtype":"依存标注",
+  "actions":[
+    {
+      "actionname":"correct",
+      "activationflag":true
+    },{
+      "actionname":"show/hide",
+      "activationflag":true
+    }
+  ],
+  "note":"备注"
+}

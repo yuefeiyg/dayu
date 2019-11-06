@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationLabelMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.AnnotationLabel" >
+    <id column="labelid" property="labelid" jdbcType="VARCHAR" />
+    <result column="templateid" property="templateid" jdbcType="VARCHAR" />
+    <result column="labelname" property="labelname" jdbcType="VARCHAR" />
+    <result column="shortcut" property="shortcut" jdbcType="VARCHAR" />
+    <result column="colour" property="colour" jdbcType="VARCHAR" />
+    <result column="symbol" property="symbol" jdbcType="VARCHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="depth" property="depth" jdbcType="INTEGER" />
+    <result column="isleaf" property="isleaf" jdbcType="CHAR" />
+    <result column="parentlabelid" property="parentlabelid" jdbcType="VARCHAR" />
+    <result column="relationlabel" property="relationlabel" jdbcType="CHAR" />
+    <result column="createuserid" property="createuserid" jdbcType="VARCHAR" />
+    <result column="createdate" property="createdate" jdbcType="VARCHAR" />
+    <result column="updatedate" property="updatedate" jdbcType="VARCHAR" />
+    <result column="labelstate" property="labelstate" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    labelid, templateid, labelname, shortcut, colour, symbol, code, depth, isleaf, parentlabelid,
+    relationlabel, createuserid, createdate, updatedate, labelstate
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from annotation_label
+    where labelid = #{labelid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from annotation_label
+    where labelid = #{labelid,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="map" >
+    insert into annotation_label
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="labelid != null" >labelid,</if>
+      <if test="templateid != null" >templateid,</if>
+      <if test="labelname != null" >labelname,</if>
+      <if test="shortcut != null" >shortcut,</if>
+      <if test="colour != null" >colour,</if>
+      <if test="symbol != null" >symbol,</if>
+      <if test="code != null" >code,</if>
+      <if test="depth != null" >depth,</if>
+      <if test="isleaf != null" >isleaf,</if>
+      <if test="parentlabelid != null" >parentlabelid,</if>
+      <if test="relationlabel != null" >relationlabel,</if>
+      <if test="createuserid != null" >createuserid,</if>
+      <if test="createdate != null" >createdate,</if>
+      <if test="updatedate != null" >updatedate,</if>
+      <if test="labelstate != null" >labelstate,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="labelid != null" >#{labelid,jdbcType=VARCHAR},</if>
+      <if test="templateid != null" >#{templateid,jdbcType=VARCHAR},</if>
+      <if test="labelname != null" >#{labelname,jdbcType=VARCHAR},</if>
+      <if test="shortcut != null" >#{shortcut,jdbcType=VARCHAR},</if>
+      <if test="colour != null" >#{colour,jdbcType=VARCHAR},</if>
+      <if test="symbol != null" > #{symbol,jdbcType=VARCHAR},</if>
+      <if test="code != null" >#{code,jdbcType=VARCHAR},</if>
+      <if test="depth != null" >#{depth,jdbcType=INTEGER},</if>
+      <if test="isleaf != null" >#{isleaf,jdbcType=CHAR},</if>
+      <if test="parentlabelid != null" >#{parentlabelid,jdbcType=VARCHAR},</if>
+      <if test="relationlabel != null" >#{relationlabel,jdbcType=CHAR},</if>
+      <if test="createuserid != null" >#{createuserid,jdbcType=VARCHAR},</if>
+      <if test="createdate != null" >#{createdate,jdbcType=VARCHAR},</if>
+      <if test="updatedate != null" >#{updatedate,jdbcType=VARCHAR},</if>
+      <if test="labelstate != null" >#{labelstate,jdbcType=INTEGER},</if>
+    </trim>
+  </insert>
+
+  <!--批量保存标签-->
+  <insert id="insertLabelBatch" parameterType="java.util.List" >
+    insert into annotation_label
+    (labelid,templateid,labelname,shortcut,colour,symbol,`code`,depth,isleaf,parentlabelid,relationlabel,createuserid,createdate,
+    updatedate,labelstate,sequence)
+    values
+    <foreach collection ="list" item="label" index= "index" separator =",">
+      (
+      #{label.labelid,jdbcType=VARCHAR}, #{label.templateid,jdbcType=VARCHAR},#{label.labelname,jdbcType=VARCHAR},#{label.shortcut,jdbcType=VARCHAR},
+      #{label.colour,jdbcType=VARCHAR}, #{label.symbol,jdbcType=VARCHAR},#{label.code,jdbcType=VARCHAR},#{label.depth,jdbcType=INTEGER},
+      #{label.isleaf,jdbcType=CHAR},#{label.parentlabelid,jdbcType=VARCHAR},#{label.relationlabel,jdbcType=CHAR}, #{label.createuserid,jdbcType=VARCHAR},
+      #{label.createdate,jdbcType=VARCHAR},#{label.updatedate,jdbcType=VARCHAR},#{label.labelstate,jdbcType=INTEGER},#{label.sequence,jdbcType=INTEGER}
+      )
+    </foreach>
+  </insert>
+
+  <!--根据模板id查询标签列表信息-->
+  <select id="getLablesByTemplateId" resultType="map" parameterType="java.lang.String">
+       SELECT
+        label.labelid,label.labelname,label.shortcut,label.colour,label.symbol,label.code,label.depth,label.isleaf,label.parentlabelid,
+        rule.arg1type,rule.arg2type,label.relationlabel,label.createuserid
+      FROM annotation_label label LEFT JOIN annotation_label_relation_rule rule ON label.labelid = rule.labelid AND rule.templateid = label.templateid
+      WHERE label.templateid = #{templateid} AND label.labelstate = 1
+      ORDER BY sequence
+  </select>
+
+  <!--查询依存标注模板时，同时需要查询序列标注的标签信息-->
+  <select id="getLablesByAnnotationType" resultType="map" parameterType="java.lang.String">
+       SELECT label.labelid,label.labelname,label.shortcut,label.colour,label.symbol,label.code,label.depth,label.isleaf,label.parentlabelid,
+      label.relationlabel,label.createuserid
+       from annotation_template template INNER JOIN annotation_label label on template.templateid = label.templateid
+      WHERE template.annotationtype = #{annotationtype} AND label.labelstate = 1
+      ORDER BY sequence
+  </select>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.AnnotationLabel" >
+    update annotation_label
+    <set >
+      <if test="templateid != null" >templateid = #{templateid,jdbcType=VARCHAR},</if>
+      <if test="labelname != null" >labelname = #{labelname,jdbcType=VARCHAR},</if>
+      <if test="shortcut != null" >shortcut = #{shortcut,jdbcType=VARCHAR},</if>
+      <if test="colour != null" >colour = #{colour,jdbcType=VARCHAR},</if>
+      <if test="symbol != null" >symbol = #{symbol,jdbcType=VARCHAR},</if>
+      <if test="code != null" >code = #{code,jdbcType=VARCHAR},</if>
+      <if test="depth != null" >depth = #{depth,jdbcType=INTEGER},</if>
+      <if test="isleaf != null" >isleaf = #{isleaf,jdbcType=CHAR}, </if>
+      <if test="parentlabelid != null" >parentlabelid = #{parentlabelid,jdbcType=VARCHAR},</if>
+      <if test="relationlabel != null" >relationlabel = #{relationlabel,jdbcType=CHAR},</if>
+      <if test="createuserid != null" >createuserid = #{createuserid,jdbcType=VARCHAR},</if>
+      <if test="createdate != null" >createdate = #{createdate,jdbcType=VARCHAR},</if>
+      <if test="updatedate != null" >updatedate = #{updatedate,jdbcType=VARCHAR},</if>
+      <if test="labelstate != null" >labelstate = #{labelstate,jdbcType=INTEGER},</if>
+    </set>
+    where labelid = #{labelid,jdbcType=VARCHAR}
+  </update>
+
+</mapper>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.LogAnnotationObjectInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.LogAnnotationObjectInfo" >
+    <id column="logid" property="logid" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+    <result column="userid" property="userid" jdbcType="VARCHAR" />
+    <result column="createordellable" property="createordellable" jdbcType="VARCHAR" />
+    <result column="operatetime" property="operatetime" jdbcType="VARCHAR" />
+    <result column="objectdataid" property="objectdataid" jdbcType="VARCHAR" />
+    <result column="itemid" property="itemid" jdbcType="VARCHAR" />
+    <result column="item" property="item" jdbcType="VARCHAR" />
+    <result column="labelid" property="labelid" jdbcType="VARCHAR" />
+    <result column="startoffset" property="startoffset" jdbcType="VARCHAR" />
+    <result column="endoffset" property="endoffset" jdbcType="VARCHAR" />
+    <result column="bndbox" property="bndbox" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    logid, taskid, userid, createordellable, operatetime,
+    objectdataid, itemid, item, labelid, startoffset, endoffset, bndbox
+  </sql>
+
+  <insert id="batchInsertLogAnnotationObjectInfo" parameterType="java.util.List">
+    insert into log_annotation_object_info
+    (logid, taskid, userid, createordellable, operatetime,
+    objectdataid, itemid, item, labelid, startoffset, endoffset, bndbox)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.logid,jdbcType=VARCHAR}, #{item.taskid,jdbcType=VARCHAR}, #{item.userid,jdbcType=VARCHAR},
+       #{item.createordellable,jdbcType=VARCHAR},
+      #{item.operatetime,jdbcType=VARCHAR},#{item.objectdataid,jdbcType=VARCHAR}, #{item.itemid,jdbcType=VARCHAR},
+      #{item.item,jdbcType=VARCHAR},#{item.labelid,jdbcType=VARCHAR}, #{item.startoffset,jdbcType=VARCHAR},
+      #{item.endoffset,jdbcType=VARCHAR},#{item.bndbox,jdbcType=VARCHAR}
+      )
+    </foreach>
+  </insert>
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from log_annotation_object_info
+    where logid = #{logid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from log_annotation_object_info
+    where logid = #{logid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.LogAnnotationObjectInfo" >
+    insert into log_annotation_object_info (logid, taskid, userid, 
+       createordellable, operatetime,
+      objectdataid, itemid, item, 
+      labelid, startoffset, endoffset, 
+      bndbox)
+    values (#{logid,jdbcType=VARCHAR}, #{taskid,jdbcType=VARCHAR}, #{userid,jdbcType=VARCHAR}, 
+       #{createordellable,jdbcType=VARCHAR}, #{operatetime,jdbcType=VARCHAR},
+      #{objectdataid,jdbcType=VARCHAR}, #{itemid,jdbcType=VARCHAR}, #{item,jdbcType=VARCHAR}, 
+      #{labelid,jdbcType=VARCHAR}, #{startoffset,jdbcType=VARCHAR}, #{endoffset,jdbcType=VARCHAR}, 
+      #{bndbox,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.LogAnnotationObjectInfo" >
+    insert into log_annotation_object_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="logid != null" >
+        logid,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+      <if test="userid != null" >
+        userid,
+      </if>
+
+      <if test="createordellable != null" >
+        createordellable,
+      </if>
+      <if test="operatetime != null" >
+        operatetime,
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="itemid != null" >
+        itemid,
+      </if>
+      <if test="item != null" >
+        item,
+      </if>
+      <if test="labelid != null" >
+        labelid,
+      </if>
+      <if test="startoffset != null" >
+        startoffset,
+      </if>
+      <if test="endoffset != null" >
+        endoffset,
+      </if>
+      <if test="bndbox != null" >
+        bndbox,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="logid != null" >
+        #{logid,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+
+      <if test="createordellable != null" >
+        #{createordellable,jdbcType=VARCHAR},
+      </if>
+      <if test="operatetime != null" >
+        #{operatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="itemid != null" >
+        #{itemid,jdbcType=VARCHAR},
+      </if>
+      <if test="item != null" >
+        #{item,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="startoffset != null" >
+        #{startoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="endoffset != null" >
+        #{endoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="bndbox != null" >
+        #{bndbox,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.LogAnnotationObjectInfo" >
+    update log_annotation_object_info
+    <set >
+      <if test="taskid != null" >
+        taskid = #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        userid = #{userid,jdbcType=VARCHAR},
+      </if>
+
+      <if test="createordellable != null" >
+        createordellable = #{createordellable,jdbcType=VARCHAR},
+      </if>
+      <if test="operatetime != null" >
+        operatetime = #{operatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="itemid != null" >
+        itemid = #{itemid,jdbcType=VARCHAR},
+      </if>
+      <if test="item != null" >
+        item = #{item,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        labelid = #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="startoffset != null" >
+        startoffset = #{startoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="endoffset != null" >
+        endoffset = #{endoffset,jdbcType=VARCHAR},
+      </if>
+      <if test="bndbox != null" >
+        bndbox = #{bndbox,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.LogAnnotationObjectInfo" >
+    update log_annotation_object_info
+    set taskid = #{taskid,jdbcType=VARCHAR},
+      userid = #{userid,jdbcType=VARCHAR},
+      createordellable = #{createordellable,jdbcType=VARCHAR},
+      operatetime = #{operatetime,jdbcType=VARCHAR},
+      objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      itemid = #{itemid,jdbcType=VARCHAR},
+      item = #{item,jdbcType=VARCHAR},
+      labelid = #{labelid,jdbcType=VARCHAR},
+      startoffset = #{startoffset,jdbcType=VARCHAR},
+      endoffset = #{endoffset,jdbcType=VARCHAR},
+      bndbox = #{bndbox,jdbcType=VARCHAR}
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+</mapper>

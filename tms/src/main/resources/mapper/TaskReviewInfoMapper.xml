@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.TaskReviewInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.TaskReviewInfo" >
+    <result column="sourceid" property="sourceid" jdbcType="VARCHAR" />
+    <result column="dataid" property="dataid" jdbcType="VARCHAR" />
+    <result column="mark" property="mark" jdbcType="VARCHAR" />
+    <result column="comments" property="comments" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+  </resultMap>
+  <!--批量插入评语信息-->
+  <insert id="batchInserts" parameterType="java.util.List">
+    insert into task_review_info
+    values
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (
+      #{item.sourceid,jdbcType=VARCHAR},
+      #{item.dataid,jdbcType=VARCHAR},
+      #{item.mark,jdbcType=VARCHAR},
+      #{item.comments,jdbcType=VARCHAR},
+      #{item.taskid,jdbcType=VARCHAR}
+      )
+    </foreach>
+  </insert>
+
+  <insert id="insert" parameterType="com.blcultra.model.TaskReviewInfo" >
+    insert into task_review_info (sourceid, dataid, mark, 
+      comments, taskid)
+    values (#{sourceid,jdbcType=VARCHAR}, #{dataid,jdbcType=VARCHAR}, #{mark,jdbcType=VARCHAR}, 
+      #{comments,jdbcType=VARCHAR}, #{taskid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.TaskReviewInfo" >
+    insert into task_review_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="sourceid != null" >
+        sourceid,
+      </if>
+      <if test="dataid != null" >
+        dataid,
+      </if>
+      <if test="mark != null" >
+        mark,
+      </if>
+      <if test="comments != null" >
+        comments,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="sourceid != null" >
+        #{sourceid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataid != null" >
+        #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="mark != null" >
+        #{mark,jdbcType=VARCHAR},
+      </if>
+      <if test="comments != null" >
+        #{comments,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.TaskReviewInfo" >
+    update task_review_info
+    <set >
+      <if test="objectdataid != null" >
+        objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="mark != null" >
+        mark = #{mark,jdbcType=VARCHAR},
+      </if>
+      <if test="comments != null" >
+        comments = #{comments,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.TaskReviewInfo" >
+    update task_review_info
+    set objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      mark = #{mark,jdbcType=VARCHAR},
+      comments = #{comments,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="getDatasByTaskId" parameterType="java.lang.String" resultType="map">
+    select tri.sourceid,tri.dataid,tri.mark,tri.comments from
+    task_review_info tri
+    WHERE
+    tri.taskid  =  #{taskId}
+  </select>
+
+  <!--批量插入标注对象关系属性信息-->
+  <insert id="batchInsert" parameterType="java.util.List" >
+    insert into task_attach_info
+    values
+    <foreach collection ="list" item="taskReviewInfo" index= "index" separator =",">
+      (
+      #{taskReviewInfo.sourceid}, #{taskReviewInfo.dataid},
+      #{taskReviewInfo.mark},#{taskReviewInfo.comments},
+      #{taskReviewInfo.taskid}
+      )
+    </foreach>
+  </insert>
+</mapper>

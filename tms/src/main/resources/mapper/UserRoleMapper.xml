@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.UserRoleMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.UserRoleKey" >
+    <id column="userid" property="userid" jdbcType="VARCHAR" />
+    <id column="roleid" property="roleid" jdbcType="VARCHAR" />
+    <id column="visible" property="visible" jdbcType="VARCHAR" />
+  </resultMap>
+  <!--根据用户id查询用户角色信息（今日概览统计时用）-->
+  <select id="getUserRoleDetailsByUserid" parameterType="java.lang.String" resultType="map">
+      SELECT
+          ur.roleid,
+          ur.visible,
+          r.rolekey
+      FROM
+          user_role ur
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE
+	    ur.userid = #{userid,jdbcType=VARCHAR}
+  </select>
+
+  <delete id="deleteRoleByUserid" parameterType="java.lang.String">
+    delete from user_role
+    where userid = #{userid,jdbcType=VARCHAR}
+  </delete>
+
+  <select id="getUserRoleInfoByUserid" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT userid , roleid ,visible
+    FROM  user_role
+    WHERE userId = #{userid,jdbcType=VARCHAR}
+  </select>
+
+  <!--批量新增-->
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into user_role (userid, roleid,visible)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.userid,jdbcType=VARCHAR}, #{item.roleid,jdbcType=INTEGER}, #{item.visible,jdbcType=INTEGER})
+    </foreach>
+  </insert>
+
+
+  <delete id="deleteByPrimaryKey" parameterType="com.blcultra.model.UserRoleKey" >
+    delete from user_role
+    where userid = #{userid,jdbcType=VARCHAR}
+      and roleid = #{roleid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.UserRoleKey" >
+    insert into user_role (userid, roleid,visible)
+    values (#{userid,jdbcType=VARCHAR}, #{roleid,jdbcType=VARCHAR}, #{visible,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.UserRoleKey" >
+    insert into user_role
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="userid != null" >
+        userid,
+      </if>
+      <if test="roleid != null" >
+        roleid,
+      </if>
+      <if test="visible != null" >
+        visible,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="roleid != null" >
+        #{roleid,jdbcType=VARCHAR},
+      </if>
+      <if test="visible != null" >
+        #{visible,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

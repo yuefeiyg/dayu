@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.CompareResultDatacodeMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.CompareResultDatacode" >
+    <id column="resultid" property="resultid" jdbcType="VARCHAR" />
+    <result column="datacode" property="datacode" jdbcType="VARCHAR" />
+    <result column="datacodefilepath" property="datacodefilepath" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    resultid, datacode, datacodefilepath
+  </sql>
+
+  <select id="getDatacodeFilePath" parameterType="map" resultType="map">
+    SELECT datacodefilepath
+    FROM compare_result_datacode
+    WHERE resultid = #{resultid,jdbcType=VARCHAR}
+    AND datacode = #{datacode,jdbcType=VARCHAR}
+  </select>
+
+  <insert id="insertDatacodes" parameterType="map">
+    insert into compare_result_datacode
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="resultid != null" >
+        resultid,
+      </if>
+      <if test="datacode != null" >
+        datacode,
+      </if>
+      <if test="datacodefilepath != null" >
+        datacodefilepath,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="resultid != null" >
+        #{resultid,jdbcType=VARCHAR},
+      </if>
+      <if test="datacode != null" >
+        #{datacode,jdbcType=VARCHAR},
+      </if>
+      <if test="datacodefilepath != null" >
+        #{datacodefilepath,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into compare_result_datacode (resultid, datacode,datacodefilepath)
+    values
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (
+      #{item.resultid,jdbcType=VARCHAR},
+      #{item.datacode,jdbcType=VARCHAR},
+      #{item.datacodefilepath,jdbcType=VARCHAR}
+      )
+    </foreach>
+  </insert>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from compare_result_datacode
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from compare_result_datacode
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.CompareResultDatacode" >
+    insert into compare_result_datacode (resultid, datacode,datacodefilepath)
+    values (#{resultid,jdbcType=VARCHAR}, #{datacode,jdbcType=VARCHAR}, #{datacodefilepath,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.CompareResultDatacode" >
+    insert into compare_result_datacode
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="resultid != null" >
+        resultid,
+      </if>
+      <if test="datacode != null" >
+        datacode,
+      </if>
+      <if test="datacodefilepath != null" >
+        datacodefilepath,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="resultid != null" >
+        #{resultid,jdbcType=VARCHAR},
+      </if>
+      <if test="datacode != null" >
+        #{datacode,jdbcType=VARCHAR},
+      </if>
+      <if test="datacodefilepath != null" >
+        #{datacodefilepath,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.CompareResultDatacode" >
+    update compare_result_datacode
+    <set >
+      <if test="datacode != null" >
+        datacode = #{datacode,jdbcType=VARCHAR},
+      </if>
+      <if test="datacodefilepath != null" >
+        datacodefilepath = #{datacodefilepath,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.CompareResultDatacode" >
+    update compare_result_datacode
+    set datacode = #{datacode,jdbcType=VARCHAR}
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </update>
+</mapper>

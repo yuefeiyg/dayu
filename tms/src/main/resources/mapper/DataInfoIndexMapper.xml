@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.DataInfoIndexMapper" >
+  <!--批量插入文本索引数据-->
+  <insert id="addDataInfoIndexBatch" parameterType="java.util.List" >
+    insert into data_info_index
+        (dataindexid,dataid,contentid,dataindexname,sequence)
+    values
+    <foreach collection ="list" item="datainfo" index= "index" separator =",">
+      (
+      #{datainfo.dataindexid}, #{datainfo.dataid},
+      #{datainfo.contentid},#{datainfo.dataindexname},
+      #{datainfo.sequence}
+      )
+    </foreach>
+  </insert>
+
+  <!--根据任务id或文本id查询索引-->
+  <select id="getDataIndex" resultType="map" parameterType="map">
+    SELECT dii.dataindexid,dii.dataid,dii.contentid,dii.dataindexname,dii.sequence
+    <if test="taskid != null and taskid != ''">
+      ,
+      CASE WHEN aooi.objectdataid is NULL THEN 0
+      ELSE 1 END as state
+    </if>
+    FROM data_info_index dii
+    <if test="taskid != null and taskid != ''">
+      INNER JOIN task_annotation_data tad ON tad.sourceid = dii.dataid
+          <if test="annotationobject == '012001'">
+            AND dii.contentid = tad.dataid
+          </if>
+      LEFT JOIN annotation_other_object_info aooi ON aooi.objectdataid = tad.objectdataid
+    </if>
+    WHERE 1=1
+    <if test="dataid != null and dataid != '' ">
+      and dii.dataid = #{dataid}
+    </if>
+    <if test="taskid != null and taskid != ''">
+      AND tad.taskid = #{taskid}
+    </if>
+    GROUP BY tad.objectdataid
+    order by sequence,dataindexname
+  </select>
+</mapper>

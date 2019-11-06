@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.TaskAnnotationDataMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.TaskAnnotationData" >
+    <id column="objectdataid" property="objectdataid" jdbcType="VARCHAR" />
+    <result column="datatype" property="datatype" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+    <result column="sourceid" property="sourceid" jdbcType="VARCHAR" />
+    <result column="labeltype" property="labeltype" jdbcType="VARCHAR" />
+    <result column="dataid" property="dataid" jdbcType="VARCHAR" />
+    <result column="relation" property="relation" jdbcType="VARCHAR" />
+    <result column="executestate" property="executestate" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    objectdataid, datatype, taskid, sourceid, labeltype, dataid, relation, executestate
+  </sql>
+  <select id="getAnnotationDataByTaskId" parameterType="java.lang.String" resultType="map">
+    SELECT  aooi.dataitemid,aooi.itemid,aooi.objectdataid,aooi.datainfo,aooi.annotationtype,tad.sourceid,di.dataname,di.datapath,
+        di.dataobjecttype,di.size,di.scenariotype,di.owner,dii.dataindexname,dii.dataindexid
+    FROM  task_annotation_data tad
+    RIGHT JOIN annotation_other_object_info aooi ON  aooi.objectdataid = tad.objectdataid
+    RIGHT JOIN data_info di ON  di.dataid = tad.sourceid
+    LEFT JOIN data_info_index dii ON dii.dataid = di.dataid and dii.contentid = tad.dataid
+    WHERE  tad.taskid = #{taskid,jdbcType=VARCHAR}
+  </select>
+  <!--根据任务id和sourceID查询图片标注数据item列表-->
+  <select id="getPicAnnotationDataByTaskIdSourceId" parameterType="map" resultType="com.blcultra.model.AnnotationObjectInfo">
+   SELECT  aoi.dataitemid,aoi.itemid, aoi.objectdataid,aoi.item,aoi.labelid,aoi.bndbox
+    FROM task_annotation_data tad
+    RIGHT JOIN annotation_object_info aoi ON aoi.objectdataid=tad.objectdataid
+    WHERE tad.taskid = #{taskid,jdbcType=VARCHAR}
+    AND tad.sourceid =#{sourceid,jdbcType=VARCHAR}
+  </select>
+  <select id="getSourceidAndDataIdByObjectdataid" parameterType="java.lang.String" resultType="map">
+    SELECT sourceid,  dataid
+    FROM  task_annotation_data
+    WHERE  objectdataid =#{objectdataid,jdbcType=VARCHAR}
+  </select>
+
+  <select id="getAnnotationObjectInfos" parameterType="map" resultType="com.blcultra.model.AnnotationObjectInfo">
+    SELECT aoi.*
+    FROM task_annotation_data tad
+    RIGHT JOIN annotation_object_info aoi ON aoi.objectdataid = tad.objectdataid
+    WHERE
+    tad.taskid = #{taskid,jdbcType=VARCHAR}
+    AND tad.sourceid= #{sourceid,jdbcType=VARCHAR}
+    AND tad.dataid = #{dataid,jdbcType=VARCHAR}
+    ORDER BY CONVERT(aoi.startoffset,SIGNED) ASC,CONVERT(aoi.endoffset,SIGNED) DESC
+  </select>
+
+
+  <select id="getSourceIdAndSourceNameByTaskId" parameterType="java.lang.String" resultType="map">
+      SELECT DISTINCT(tad.sourceid),di.dataname,di.dsid,di.dsid,di.datapath,
+        di.dataobjecttype,di.size,di.scenariotype,di.owner,di.segmentation
+      FROM task_annotation_data tad
+      LEFT JOIN data_info di ON di.dataid = tad.sourceid
+      WHERE tad.taskid = #{taskid,jdbcType=VARCHAR}
+  </select>
+  <!--获取数据类型为文本以及对应任务中的文件id列表-->
+  <select id="getSourceIdsByTaskId" parameterType="java.lang.String" resultType="java.lang.String">
+    SELECT DISTINCT(tad.sourceid)
+      FROM task_annotation_data tad
+      WHERE 1=1
+       AND tad.taskid = #{taskid,jdbcType=VARCHAR}
+       AND tad.datatype = '012001'
+  </select>
+
+  <select id="getSourceinfoByTaskId" parameterType="java.lang.String" resultType="map">
+    SELECT DISTINCT dif.dataid ,dif.dataname
+    FROM task_annotation_data tada
+    inner JOIN data_info dif  ON dif.dataid = tada.sourceid
+    WHERE tada.taskid = #{taskid,jdbcType=VARCHAR}
+
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from task_annotation_data
+    where objectdataid = #{objectdataid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from task_annotation_data
+    where objectdataid = #{objectdataid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.TaskAnnotationData" >
+    insert into task_annotation_data (objectdataid, datatype, taskid, 
+      sourceid, labeltype, dataid, 
+      relation, executestate)
+    values (#{objectdataid,jdbcType=VARCHAR}, #{datatype,jdbcType=VARCHAR}, #{taskid,jdbcType=VARCHAR}, 
+      #{sourceid,jdbcType=VARCHAR}, #{labeltype,jdbcType=VARCHAR}, #{dataid,jdbcType=VARCHAR}, 
+      #{relation,jdbcType=VARCHAR}, #{executestate,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.TaskAnnotationData" >
+    insert into task_annotation_data
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="datatype != null" >
+        datatype,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+      <if test="sourceid != null" >
+        sourceid,
+      </if>
+      <if test="labeltype != null" >
+        labeltype,
+      </if>
+      <if test="dataid != null" >
+        dataid,
+      </if>
+      <if test="relation != null" >
+        relation,
+      </if>
+      <if test="executestate != null" >
+        executestate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="datatype != null" >
+        #{datatype,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceid != null" >
+        #{sourceid,jdbcType=VARCHAR},
+      </if>
+      <if test="labeltype != null" >
+        #{labeltype,jdbcType=VARCHAR},
+      </if>
+      <if test="dataid != null" >
+        #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="relation != null" >
+        #{relation,jdbcType=VARCHAR},
+      </if>
+      <if test="executestate != null" >
+        #{executestate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.TaskAnnotationData" >
+    update task_annotation_data
+    <set >
+      <if test="datatype != null" >
+        datatype = #{datatype,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        taskid = #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceid != null" >
+        sourceid = #{sourceid,jdbcType=VARCHAR},
+      </if>
+      <if test="labeltype != null" >
+        labeltype = #{labeltype,jdbcType=VARCHAR},
+      </if>
+      <if test="dataid != null" >
+        dataid = #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="relation != null" >
+        relation = #{relation,jdbcType=VARCHAR},
+      </if>
+      <if test="executestate != null" >
+        executestate = #{executestate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where objectdataid = #{objectdataid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.TaskAnnotationData" >
+    update task_annotation_data
+    set datatype = #{datatype,jdbcType=VARCHAR},
+      taskid = #{taskid,jdbcType=VARCHAR},
+      sourceid = #{sourceid,jdbcType=VARCHAR},
+      labeltype = #{labeltype,jdbcType=VARCHAR},
+      dataid = #{dataid,jdbcType=VARCHAR},
+      relation = #{relation,jdbcType=VARCHAR},
+      executestate = #{executestate,jdbcType=VARCHAR}
+    where objectdataid = #{objectdataid,jdbcType=VARCHAR}
+  </update>
+
+  <!--批量插入文本数据，按照句子插入-->
+  <insert id="batchInsert" parameterType="java.util.List" >
+    insert into task_annotation_data
+    values
+    <foreach collection ="list" item="taskAnnotationData" index= "index" separator =",">
+      (
+      #{taskAnnotationData.objectdataid}, #{taskAnnotationData.datatype},
+      #{taskAnnotationData.taskid},#{taskAnnotationData.sourceid},
+      #{taskAnnotationData.labeltype}, #{taskAnnotationData.dataid},
+      #{taskAnnotationData.relation}, #{taskAnnotationData.executestate}
+      )
+    </foreach>
+  </insert>
+
+  <delete id="deleteByTaskIdAndSourceId" parameterType="map">
+    delete from task_annotation_data
+    where
+    taskid = #{taskid}
+    and
+    sourceid in (${dataids})
+  </delete>
+
+  <!--根据任务id和文本id查询标注数据-->
+  <select id="selectAnnotationDataByTaskid" parameterType="map" resultType="map">
+    SELECT
+        aoi.dataitemid,aoi.objectdataid,aoi.item,aoi.labelid,aoi.startoffset,aoi.endoffset,aoi.bndbox,
+        label.labelname,label.symbol,label.`code` as labelcode,dc.pn,dc.sn
+    FROM
+    annotation_object_info aoi
+    INNER JOIN task_annotation_data tad ON aoi.objectdataid = tad.objectdataid
+    INNER JOIN annotation_label label ON aoi.labelid = label.labelid
+    INNER JOIN data_content dc ON tad.dataid = dc.contentid
+    WHERE
+    tad.taskid = #{taskid}
+    AND
+    tad.sourceid = #{sourceid}
+        ORDER BY CONVERT(dc.pn,SIGNED) ASC,CONVERT(dc.sn,SIGNED) ASC,CONVERT(aoi.startoffset,SIGNED) ASC,CONVERT(aoi.endoffset,SIGNED) DESC
+  </select>
+</mapper>

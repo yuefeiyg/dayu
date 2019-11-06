@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.TaskInfoNoteMapper" >
+  <insert id="insertSelective" parameterType="map" >
+    insert into task_info_note
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="noteid != null" >
+        noteid,
+      </if>
+      <if test="projectid != null" >
+        projectid,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="createuserid != null" >
+        createuserid,
+      </if>
+      <if test="receiveuserid != null" >
+        receiveuserid,
+      </if>
+      <if test="note != null" >
+        note,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="notestate != null" >
+        notestate,
+      </if>
+      <if test="readstate != null" >
+        readstate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="noteid != null" >
+        #{noteid,jdbcType=VARCHAR},
+      </if>
+      <if test="projectid != null" >
+        #{projectid,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="receiveuserid != null" >
+        #{receiveuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="notestate != null" >
+        #{notestate,jdbcType=VARCHAR},
+      </if>
+      <if test="readstate != null" >
+        #{readstate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="getNotesByTask" resultType="map" parameterType="map">
+    SELECT tin.noteid,tin.createuserid,tin.createtime,u.username as createusername,tin.note,tin.readstate
+    FROM task_info_note tin
+    INNER JOIN `user` u ON tin.createuserid = u.userid
+    WHERE tin.notestate = '1'
+    AND tin.taskid =  #{taskid}
+  </select>
+
+  <select id="getNotesByUser" resultType="map" parameterType="java.lang.String">
+    SELECT tin.noteid,tin.createuserid,tin.createtime,u.username as createusername,tin.note,project.projectname,task.taskid,task.tasktitle,"note" as type
+    FROM task_info_note tin
+    INNER JOIN `user` u ON tin.createuserid = u.userid
+    INNER JOIN project_info project ON tin.projectid = project.projectid
+    INNER JOIN task_info task ON tin.taskid = task.taskid
+    WHERE tin.readstate = '1'
+    AND tin.receiveuserid = #{userid}
+  </select>
+
+  <select id="getUnreadNum" resultType="int" parameterType="java.lang.String">
+    SELECT COUNT(1) FROM task_info_note WHERE readstate = '1' AND receiveuserid = #{userid}
+  </select>
+
+  <update id="updateTaskInfoNote" parameterType="map" >
+    update task_info_note
+    <set >
+      <if test="note != null" >
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+      <if test="notestate != null" >
+        notestate = #{notestate,jdbcType=VARCHAR},
+      </if>
+      <if test="readstate != null" >
+        readstate = #{readstate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where noteid = #{noteid}
+  </update>
+  <delete id="deleteNote" parameterType="map">
+      DELETE FROM task_info_note WHERE noteid = #{noteid} AND createuserid = #{userid}
+  </delete>
+</mapper>

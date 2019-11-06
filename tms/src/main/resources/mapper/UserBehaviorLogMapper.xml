@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.UserBehaviorLogMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.UserBehaviorLog" >
+    <id column="logid" property="logid" jdbcType="VARCHAR" />
+    <result column="userid" property="userid" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+    <result column="textid" property="textid" jdbcType="VARCHAR" />
+    <result column="sentenceid" property="sentenceid" jdbcType="VARCHAR" />
+    <result column="pn" property="pn" jdbcType="VARCHAR" />
+    <result column="sn" property="sn" jdbcType="VARCHAR" />
+    <result column="hasmarked" property="hasmarked" jdbcType="INTEGER" />
+    <result column="markinfo" property="markinfo" jdbcType="VARCHAR" />
+    <result column="operatetime" property="operatetime" jdbcType="VARCHAR" />
+    <result column="operation" property="operation" jdbcType="VARCHAR" />
+    <result column="createordellable" property="createordellable" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.blcultra.model.UserBehaviorLogWithBLOBs" extends="BaseResultMap" >
+    <result column="content" property="content" jdbcType="LONGVARCHAR" />
+    <result column="beforecontent" property="beforecontent" jdbcType="LONGVARCHAR" />
+    <result column="beforesymbolcontent" property="beforesymbolcontent" jdbcType="LONGVARCHAR" />
+    <result column="symbolcontent" property="symbolcontent" jdbcType="LONGVARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    logid, userid, taskid, textid, sentenceid, pn, sn, hasmarked, markinfo, operatetime, 
+    operation, createordellable
+  </sql>
+  <sql id="Blob_Column_List" >
+    content, beforecontent, beforesymbolcontent, symbolcontent
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from user_behavior_log
+    where logid = #{logid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from user_behavior_log
+    where logid = #{logid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.UserBehaviorLogWithBLOBs" >
+    insert into user_behavior_log (logid, userid, taskid, 
+      textid, sentenceid, pn, 
+      sn, hasmarked, markinfo, 
+      operatetime, operation, createordellable, 
+      content, beforecontent, beforesymbolcontent, 
+      symbolcontent)
+    values (#{logid,jdbcType=VARCHAR}, #{userid,jdbcType=VARCHAR}, #{taskid,jdbcType=VARCHAR}, 
+      #{textid,jdbcType=VARCHAR}, #{sentenceid,jdbcType=VARCHAR}, #{pn,jdbcType=VARCHAR}, 
+      #{sn,jdbcType=VARCHAR}, #{hasmarked,jdbcType=INTEGER}, #{markinfo,jdbcType=VARCHAR}, 
+      #{operatetime,jdbcType=VARCHAR}, #{operation,jdbcType=VARCHAR}, #{createordellable,jdbcType=VARCHAR}, 
+      #{content,jdbcType=LONGVARCHAR}, #{beforecontent,jdbcType=LONGVARCHAR}, #{beforesymbolcontent,jdbcType=LONGVARCHAR}, 
+      #{symbolcontent,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.UserBehaviorLogWithBLOBs" >
+    insert into user_behavior_log
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="logid != null" >
+        logid,
+      </if>
+      <if test="userid != null" >
+        userid,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+      <if test="textid != null" >
+        textid,
+      </if>
+      <if test="sentenceid != null" >
+        sentenceid,
+      </if>
+      <if test="pn != null" >
+        pn,
+      </if>
+      <if test="sn != null" >
+        sn,
+      </if>
+      <if test="hasmarked != null" >
+        hasmarked,
+      </if>
+      <if test="markinfo != null" >
+        markinfo,
+      </if>
+      <if test="operatetime != null" >
+        operatetime,
+      </if>
+      <if test="operation != null" >
+        operation,
+      </if>
+      <if test="createordellable != null" >
+        createordellable,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+      <if test="beforecontent != null" >
+        beforecontent,
+      </if>
+      <if test="beforesymbolcontent != null" >
+        beforesymbolcontent,
+      </if>
+      <if test="symbolcontent != null" >
+        symbolcontent,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="logid != null" >
+        #{logid,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="textid != null" >
+        #{textid,jdbcType=VARCHAR},
+      </if>
+      <if test="sentenceid != null" >
+        #{sentenceid,jdbcType=VARCHAR},
+      </if>
+      <if test="pn != null" >
+        #{pn,jdbcType=VARCHAR},
+      </if>
+      <if test="sn != null" >
+        #{sn,jdbcType=VARCHAR},
+      </if>
+      <if test="hasmarked != null" >
+        #{hasmarked,jdbcType=INTEGER},
+      </if>
+      <if test="markinfo != null" >
+        #{markinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="operatetime != null" >
+        #{operatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="operation != null" >
+        #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="createordellable != null" >
+        #{createordellable,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="beforecontent != null" >
+        #{beforecontent,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="beforesymbolcontent != null" >
+        #{beforesymbolcontent,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="symbolcontent != null" >
+        #{symbolcontent,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.UserBehaviorLogWithBLOBs" >
+    update user_behavior_log
+    <set >
+      <if test="userid != null" >
+        userid = #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        taskid = #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="textid != null" >
+        textid = #{textid,jdbcType=VARCHAR},
+      </if>
+      <if test="sentenceid != null" >
+        sentenceid = #{sentenceid,jdbcType=VARCHAR},
+      </if>
+      <if test="pn != null" >
+        pn = #{pn,jdbcType=VARCHAR},
+      </if>
+      <if test="sn != null" >
+        sn = #{sn,jdbcType=VARCHAR},
+      </if>
+      <if test="hasmarked != null" >
+        hasmarked = #{hasmarked,jdbcType=INTEGER},
+      </if>
+      <if test="markinfo != null" >
+        markinfo = #{markinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="operatetime != null" >
+        operatetime = #{operatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="operation != null" >
+        operation = #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="createordellable != null" >
+        createordellable = #{createordellable,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="beforecontent != null" >
+        beforecontent = #{beforecontent,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="beforesymbolcontent != null" >
+        beforesymbolcontent = #{beforesymbolcontent,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="symbolcontent != null" >
+        symbolcontent = #{symbolcontent,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.blcultra.model.UserBehaviorLogWithBLOBs" >
+    update user_behavior_log
+    set userid = #{userid,jdbcType=VARCHAR},
+      taskid = #{taskid,jdbcType=VARCHAR},
+      textid = #{textid,jdbcType=VARCHAR},
+      sentenceid = #{sentenceid,jdbcType=VARCHAR},
+      pn = #{pn,jdbcType=VARCHAR},
+      sn = #{sn,jdbcType=VARCHAR},
+      hasmarked = #{hasmarked,jdbcType=INTEGER},
+      markinfo = #{markinfo,jdbcType=VARCHAR},
+      operatetime = #{operatetime,jdbcType=VARCHAR},
+      operation = #{operation,jdbcType=VARCHAR},
+      createordellable = #{createordellable,jdbcType=VARCHAR},
+      content = #{content,jdbcType=LONGVARCHAR},
+      beforecontent = #{beforecontent,jdbcType=LONGVARCHAR},
+      beforesymbolcontent = #{beforesymbolcontent,jdbcType=LONGVARCHAR},
+      symbolcontent = #{symbolcontent,jdbcType=LONGVARCHAR}
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.UserBehaviorLog" >
+    update user_behavior_log
+    set userid = #{userid,jdbcType=VARCHAR},
+      taskid = #{taskid,jdbcType=VARCHAR},
+      textid = #{textid,jdbcType=VARCHAR},
+      sentenceid = #{sentenceid,jdbcType=VARCHAR},
+      pn = #{pn,jdbcType=VARCHAR},
+      sn = #{sn,jdbcType=VARCHAR},
+      hasmarked = #{hasmarked,jdbcType=INTEGER},
+      markinfo = #{markinfo,jdbcType=VARCHAR},
+      operatetime = #{operatetime,jdbcType=VARCHAR},
+      operation = #{operation,jdbcType=VARCHAR},
+      createordellable = #{createordellable,jdbcType=VARCHAR}
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+</mapper>

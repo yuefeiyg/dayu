@@ -1,0 +1,799 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.ProjectInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.ProjectInfo" >
+    <id column="projectid" property="projectid" jdbcType="VARCHAR" />
+    <result column="projectname" property="projectname" jdbcType="VARCHAR" />
+    <result column="projectdesc" property="projectdesc" jdbcType="VARCHAR" />
+    <result column="projectowner" property="projectowner" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="VARCHAR" />
+    <result column="updatetime" property="updatetime" jdbcType="VARCHAR" />
+    <result column="projectstate" property="projectstate" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="SearchBaseResultMap" type="com.blcultra.model.ProjectInfoDto" >
+    <id column="projectid" property="projectid" jdbcType="VARCHAR" />
+    <result column="projectname" property="projectname" jdbcType="VARCHAR" />
+    <result column="projectdesc" property="projectdesc" jdbcType="VARCHAR" />
+    <result column="projectowner" property="projectowner" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="VARCHAR" />
+    <result column="updatetime" property="updatetime" jdbcType="VARCHAR" />
+    <result column="projectstate" property="projectstate" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+    <collection property="users" ofType="com.blcultra.model.ProjectUser">
+      <result property="member" column="userid" />
+      <result property="username" column="username" />
+      <result property="prolekey" column="prolekey" />
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    projectid, projectname, projectdesc, projectowner, createtime, updatetime, projectstate, 
+    note
+  </sql>
+
+  <select id="getProjects" resultType="map">
+    SELECT p.projectid,p.projectname
+    FROM project_info p
+    WHERE p.projectstate = '006001'
+  </select>
+
+  <select id="getProjectInfosByProjectOwner" parameterType="map" resultType="map">
+
+    SELECT pis.projectid, pis.projectname,pis.projectowner
+    FROM project_info pis
+    WHERE pis.projectowner = #{projectowner,jdbcType=VARCHAR}
+    <if test="list != null">
+      UNION
+      SELECT prf.projectid ,prf.projectname,prf.projectowner
+      FROM project_info prf
+      WHERE
+      prf.projectid in
+      <foreach collection="list" item="id" index="index" open="(" close=")" separator=",">
+        #{id}
+      </foreach>
+    </if>
+
+  </select>
+
+
+  <select id="getProjectInfoByProjectName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT projectid, projectname FROM project_info
+    WHERE projectname = #{projectname,jdbcType=VARCHAR}
+  </select>
+
+
+  <sql id="serachproject_if_condition" >
+    <if test="keyword !=null and keyword !=''">
+      AND
+      (
+      p.projectname LIKE CONCAT("%",CONCAT(#{keyword},"%")) or p.projectdesc LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      OR p.users LIKE CONCAT("%",CONCAT(#{keyword},"%")) or  p.note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      )
+    </if>
+    <if test="projectname !=null and projectname !=''">
+      AND p.projectname LIKE CONCAT("%",CONCAT(#{projectname},"%"))
+    </if>
+    <if test="note !=null and note !=''">
+      AND p.note LIKE CONCAT("%",CONCAT(#{note},"%"))
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  p.createtime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  p.createtime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  p.createtime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+  </sql>
+  <!--模糊搜索-->
+  <select id="searchProjectInfo" resultType="map" parameterType="map">
+
+    <if test="role != 'pmanager'">
+      select * from (
+          SELECT p.*,u.username AS createusername,1 as  power,GROUP_CONCAT(pu.username) as users,GROUP_CONCAT(pu.member) as userids
+          FROM project_info p INNER JOIN `user` u ON p.projectowner = u.userid
+          INNER JOIN (
+          SELECT u.username,pu.member,pu.projectid FROM project_user pu INNER JOIN `user` u ON pu.member = u.userid
+          ) pu ON p.projectid = pu.projectid
+          WHERE p.projectstate = '006001'
+          group by p.projectid
+      ) p
+      where  1=1
+      <if test="role == 'manager'">
+        AND p.projectowner = #{projectowner, jdbcType=VARCHAR}
+      </if>
+      <include refid="serachproject_if_condition"></include>
+      union
+      select * from (
+          SELECT
+          p.*, u.username AS createusername,0 as power,GROUP_CONCAT(u.username) as users,GROUP_CONCAT(pu.member) as userids
+          FROM
+          project_user pu
+          INNER JOIN `user` u ON u.userid = pu.member
+          LEFT JOIN project_info p ON p.projectid = pu.projectid
+          WHERE p.projectstate = '006001'
+          AND pu.prolekey = 'pmanager'
+          AND pu.member = #{projectowner,jdbcType=VARCHAR}
+           group by p.projectid
+      ) p where  1=1
+      <include refid="serachproject_if_condition"></include>
+      ORDER BY createtime DESC
+      <if test="queryStart != null and pageSize != null and pageSize !=0">
+        limit #{queryStart}, #{pageSize}
+      </if>
+    </if>
+    <if test="role == 'pmanager'">
+      select * from (
+      SELECT
+      p.*, u.username AS createusername,pu.*,GROUP_CONCAT(u.username) as users,GROUP_CONCAT(pu.member) as userids
+      FROM
+      project_user pu
+      INNER JOIN `user` u ON u.userid = pu.member
+      LEFT JOIN project_info p ON p.projectid = pu.projectid
+      WHERE p.projectstate = '006001'
+      AND pu.prolekey = 'pmanager'
+      AND pu.member = #{userid,jdbcType=VARCHAR}
+      group by p.projectid
+      ) p where  1=1
+      <include refid="serachproject_if_condition"></include>
+      ORDER BY p.createtime DESC
+      <if test="queryStart != null and pageSize != null and pageSize !=0">
+        limit #{queryStart}, #{pageSize}
+      </if>
+    </if>
+
+  </select>
+
+  <!--模糊检索记录数-->
+  <select id="searchProjectInfoCounts" resultType="int" parameterType="map">
+    <if test="role != 'pmanager'">
+      SELECT COUNT(1) FROM (
+          select p.projectid from (
+          SELECT p.*,u.username AS createusername,1 as  power,GROUP_CONCAT(pu.username) as users
+          FROM project_info p INNER JOIN `user` u ON p.projectowner = u.userid
+          INNER JOIN (
+          SELECT u.username,pu.projectid FROM project_user pu INNER JOIN `user` u ON pu.member = u.userid
+          ) pu ON p.projectid = pu.projectid
+          WHERE p.projectstate = '006001'
+          group by p.projectid
+          ) p
+          where  1=1
+          <if test="role == 'manager'">
+            AND p.projectowner = #{projectowner, jdbcType=VARCHAR}
+          </if>
+          <include refid="serachproject_if_condition"></include>
+          union
+          select p.projectid from (
+          SELECT
+          p.*, u.username AS createusername,0 as power,GROUP_CONCAT(u.username) as users
+          FROM
+          project_user pu
+          INNER JOIN `user` u ON u.userid = pu.member
+          LEFT JOIN project_info p ON p.projectid = pu.projectid
+          WHERE p.projectstate = '006001'
+          AND pu.prolekey = 'pmanager'
+          AND pu.member = #{projectowner,jdbcType=VARCHAR}
+            group by p.projectid
+          ) p where  1=1
+          <include refid="serachproject_if_condition"></include>
+      ) a
+    </if>
+    <if test="role == 'pmanager'">
+      SELECT COUNT(1) FROM (
+      select p.projectid from (
+      SELECT
+      p.*, u.username AS createusername,pu.*,GROUP_CONCAT(u.username) as users
+      FROM
+      project_user pu
+      INNER JOIN `user` u ON u.userid = pu.member
+      LEFT JOIN project_info p ON p.projectid = pu.projectid
+      WHERE p.projectstate = '006001'
+      AND pu.prolekey = 'pmanager'
+      AND pu.member = #{userid,jdbcType=VARCHAR}
+      group by p.projectid
+      ) p where  1=1
+      <include refid="serachproject_if_condition"></include>
+      ) a
+    </if>
+  </select>
+  <!--
+  <select id="searchProject" parameterType="map" resultMap="SearchBaseResultMap">
+      SELECT p.*,u.userid,u.username
+      FROM project_info p
+      LEFT JOIN project_user pu on pu.projectid = p.projectid
+      LEFT JOIN `user` u ON u.userid = pu.member
+      WHERE 1=1
+      <if test="projectowner !=null and projectowner !=''">
+        AND p.projectowner =#{projectowner,jdbcType=VARCHAR}
+      </if>
+    AND
+    (
+    p.projectname LIKE "%${keyword}%" or p.projectdesc LIKE "%${keyword}%"
+    OR u.username LIKE "%${keyword}%"
+    )
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+
+  <select id="searchProjectCounts" parameterType="map" resultType="int">
+    SELECT COUNT(pur.projectid)
+    FROM
+    (SELECT p.*,u.userid,u.username
+    FROM project_info p
+    LEFT JOIN project_user pu on pu.projectid = p.projectid
+    LEFT JOIN `user` u ON u.userid = pu.member) pur
+    WHERE 1=1
+    <if test="projectowner !=null and projectowner !=''">
+      AND p.projectowner =#{projectowner,jdbcType=VARCHAR}
+    </if>
+    AND
+    (
+    pur.projectname LIKE "%${keyword}%" or pur.projectdesc LIKE "%${keyword}%"
+    OR pur.username LIKE "%${keyword}%"
+    )
+  </select>
+-->
+  <select id="getProjectInfoByProjectId" parameterType="java.lang.String" resultMap="SearchBaseResultMap">
+    SELECT p.*,u.userid,u.username,pu.prolekey
+    FROM project_info p
+    LEFT JOIN project_user pu on pu.projectid = p.projectid
+    LEFT JOIN `user` u ON u.userid = pu.member
+    WHERE 1=1
+    <if test="projectid !=null and projectid !=''">
+      AND p.projectid =#{projectid,jdbcType=VARCHAR}
+    </if>
+  </select>
+
+
+  <delete id="batchDeleteProjectsByPids" parameterType="java.util.List">
+    DELETE FROM project_info
+    WHERE projectid IN
+    <foreach collection="list"  item="item" open="("
+             separator="," close=")">
+      <if test="item!=null and item !=''">
+        #{item}
+      </if>
+    </foreach>
+  </delete>
+
+  <!--根据项目id获取项目的当前所有者和历史所有者（projectowner、performerowner）-->
+  <select id="getProjectOwnerOrPerformerOwnerByPorjectId" parameterType="java.lang.String" resultType="map">
+    SELECT u.userid,u.username,u.telephone,u.ustate,u.createtime,u.personaldesc
+    FROM `user` u
+    LEFT JOIN project_info pi  ON pi.projectowner = u.userid
+    WHERE pi.projectid = #{projectid,jdbcType=VARCHAR}
+    UNION
+    SELECT u.userid,u.username,u.telephone,u.ustate,u.createtime,u.personaldesc
+    FROM `user` u
+    LEFT JOIN project_his_owner pho ON pho.formerowner = u.userid
+    WHERE pho.projectid = #{projectid,jdbcType=VARCHAR}
+  </select>
+
+  <select id="getProjectInfoByPnameAndPowner" parameterType="map" resultMap="BaseResultMap">
+      SELECT projectid , projectname, projectdesc ,projectowner, projectstate
+      FROM  project_info
+      WHERE  projectname = #{projectname,jdbcType=VARCHAR}
+      AND  projectowner = #{projectowner,jdbcType=VARCHAR}
+      AND projectstate = '006001'
+      UNION
+      SELECT pinfo.projectid , pinfo.projectname, pinfo.projectdesc ,pinfo.projectowner, pinfo.projectstate
+      FROM project_info pinfo
+      INNER JOIN project_user pu ON pinfo.projectid = pu.projectid AND pu.member = #{projectowner,jdbcType=VARCHAR} AND
+      pu.prolekey = 'pmanager'
+      WHERE
+      projectname = #{projectname,jdbcType=VARCHAR} AND  projectstate = '006001'
+  </select>
+  <!--根据当前用户角色和当前用户id查询项目列表信息-->
+  <select id="getProjectInfoLists" parameterType="map" resultType="map">
+    <if test="role != 'pmanager'">
+        SELECT p.*,u.username AS createusername,1 as  power
+        FROM project_info p INNER JOIN `user` u ON p.projectowner = u.userid
+        WHERE 1=1
+        <if test="role == 'manager'">
+          AND p.projectowner =#{projectowner, jdbcType=VARCHAR}
+        </if>
+        AND p.projectstate = '006001'
+        union
+            SELECT
+            p.*, u.username AS createusername,0 as  power
+            FROM
+            project_user pu
+            INNER JOIN `user` u ON u.userid = pu.member
+            LEFT JOIN project_info p ON p.projectid = pu.projectid
+            WHERE 1=1
+            AND p.projectstate = '006001'
+            AND pu.prolekey = 'pmanager'
+            AND pu.member = #{projectowner,jdbcType=VARCHAR}
+            and p.projectowner != #{projectowner,jdbcType=VARCHAR}
+        ORDER BY createtime DESC
+        <if test="queryStart != null and pageSize != null and pageSize !=0">
+          limit #{queryStart}, #{pageSize}
+        </if>
+    </if>
+    <if test="role == 'pmanager'">
+      SELECT
+      p.*, u.username AS createusername,pu.*
+      FROM
+      project_user pu
+      INNER JOIN `user` u ON u.userid = pu.member
+      LEFT JOIN project_info p ON p.projectid = pu.projectid
+      WHERE 1=1
+      AND p.projectstate = '006001'
+      AND pu.prolekey = 'pmanager'
+      AND pu.member = #{userid,jdbcType=VARCHAR}
+      ORDER BY p.createtime DESC
+      <if test="queryStart != null and pageSize != null and pageSize !=0">
+        limit #{queryStart}, #{pageSize}
+      </if>
+    </if>
+  </select>
+
+  <select id="getProjectListsCounts" parameterType="map" resultType="int">
+    <if test="role != 'pmanager'">
+      SELECT COUNT(1) from (
+      (SELECT p.projectId
+      FROM project_info p
+      WHERE 1=1
+      <if test="role == 'manager'">
+        AND p.projectowner =#{projectowner, jdbcType=VARCHAR}
+      </if>
+      AND p.
+      projectstate = '006001')
+      union
+      (SELECT
+      p.projectId
+      FROM
+      project_user pu
+      INNER JOIN `user` u ON u.userid = pu.member
+      LEFT JOIN project_info p ON p.projectid = pu.projectid
+      WHERE pu.prolekey = 'pmanager'
+      AND p.projectstate = '006001'
+      AND pu.member = #{projectowner,jdbcType=VARCHAR})
+      ) pt
+    </if>
+    <if test="role == 'pmanager'">
+      SELECT COUNT(1) FROM
+      (SELECT
+        p.*, u.username AS createusername
+        FROM
+        project_user pu
+        INNER JOIN `user` u ON u.userid = pu.member
+        LEFT JOIN project_info p ON p.projectid = pu.projectid
+        WHERE pu.prolekey = 'pmanager'
+        AND p.projectstate = '006001'
+        AND pu.member = #{userid,jdbcType=VARCHAR}
+      ) pt
+    </if>
+  </select>
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from project_info
+    where projectid = #{projectid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from project_info
+    where projectid = #{projectid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.ProjectInfo" >
+    insert into project_info (projectid, projectname, projectdesc, 
+      projectowner, createtime, updatetime, 
+      projectstate, note)
+    values (#{projectid,jdbcType=VARCHAR}, #{projectname,jdbcType=VARCHAR}, #{projectdesc,jdbcType=VARCHAR}, 
+      #{projectowner,jdbcType=VARCHAR}, #{createtime,jdbcType=VARCHAR}, #{updatetime,jdbcType=VARCHAR}, 
+      #{projectstate,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.ProjectInfo" >
+    insert into project_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="projectid != null" >
+        projectid,
+      </if>
+      <if test="projectname != null" >
+        projectname,
+      </if>
+      <if test="projectdesc != null" >
+        projectdesc,
+      </if>
+      <if test="projectowner != null" >
+        projectowner,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="updatetime != null" >
+        updatetime,
+      </if>
+      <if test="projectstate != null" >
+        projectstate,
+      </if>
+      <if test="note != null" >
+        note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="projectid != null" >
+        #{projectid,jdbcType=VARCHAR},
+      </if>
+      <if test="projectname != null" >
+        #{projectname,jdbcType=VARCHAR},
+      </if>
+      <if test="projectdesc != null" >
+        #{projectdesc,jdbcType=VARCHAR},
+      </if>
+      <if test="projectowner != null" >
+        #{projectowner,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        #{updatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="projectstate != null" >
+        #{projectstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.ProjectInfo" >
+    update project_info
+    <set >
+      <if test="projectname != null" >
+        projectname = #{projectname,jdbcType=VARCHAR},
+      </if>
+      <if test="projectdesc != null" >
+        projectdesc = #{projectdesc,jdbcType=VARCHAR},
+      </if>
+      <if test="projectowner != null" >
+        projectowner = #{projectowner,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createtime = #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        updatetime = #{updatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="projectstate != null" >
+        projectstate = #{projectstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where projectid = #{projectid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.ProjectInfo" >
+    update project_info
+    set projectname = #{projectname,jdbcType=VARCHAR},
+      projectdesc = #{projectdesc,jdbcType=VARCHAR},
+      projectowner = #{projectowner,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=VARCHAR},
+      updatetime = #{updatetime,jdbcType=VARCHAR},
+      projectstate = #{projectstate,jdbcType=VARCHAR},
+      note = #{note,jdbcType=VARCHAR}
+    where projectid = #{projectid,jdbcType=VARCHAR}
+  </update>
+
+  <!--获取项目下拉列表信息-->
+  <select id="getSimpleProjectInfo" parameterType="java.lang.String" resultType="map">
+       SELECT p.projectid, p.projectname,p.updatetime
+      FROM project_info p
+            WHERE p.projectstate ='006001'
+            AND  projectowner =#{createuserid, jdbcType=VARCHAR}
+      UNION
+          SELECT p.projectid, p.projectname,p.updatetime
+      FROM project_info p
+      INNER JOIN project_user pu ON p.projectid = pu.projectid
+      WHERE pu.member = #{createuserid, jdbcType=VARCHAR} AND pu.prolekey ='pmanager'
+      ORDER BY updatetime DESC
+  </select>
+
+  <!--根据项目ID查询项目组成员列表：在创建任务时，选择任务执行人时-->
+  <select id="getUsersByProjectId" parameterType="java.lang.String" resultType="map">
+    SELECT tu.userid, tu.username
+    FROM `user` tu
+    LEFT JOIN project_user pu on pu.member = tu.userid
+    WHERE tu.ustate = '003001'
+    AND  pu.projectid =  #{projectid,jdbcType=VARCHAR}
+    GROUP BY tu.userid
+  </select>
+
+  <!--根据项目ID查询项目组成员列表：在创建任务时，选择任务执行人时-->
+  <select id="getProjectOwnerAndPmanagerByTaskId" parameterType="java.lang.String" resultType="map">
+    SELECT pi.projectowner,pu.member as pmanager FROM project_info pi
+    LEFT JOIN project_user pu ON pu.projectid = pi.projectid
+    LEFT JOIN task_info ti ON ti.projectid = pi.projectid
+    WHERE ti.taskid = #{taskid,jdbcType=VARCHAR} and pu.prolekey ='pmanager';
+  </select>
+
+
+  <select id="getProjectidsByTaskids" parameterType="map" resultType="java.lang.String">
+    SELECT task.projectid as projectids FROM task_info task
+    WHERE task.taskid in (${taskid})
+  </select>
+
+
+  <!--根据用户id查询该用户能看到的项目下任务的结果文件-->
+  <select id="getTaskResultDatasInProjectByUser" parameterType="map" resultType="map">
+    <if test="ids != null">
+      SELECT
+      task.projectid,task.taskid,dc.dataid,dc.contentid,dc.content,dc.pn,dc.sn,dc.size,dc.anninfos,dc.annrelateinfos,tad.sourceid,
+      pinfo.projectname,di.dataname,tad.objectdataid,performer.username as performername,pmanager.username as pmanagername,task.callbacktimes,
+      SUBSTR(task.finishdeadline FROM 1 FOR 10) as finishdeadline,SUBSTR(task.finishtime FROM 1 FOR 10) as finishtime
+      FROM project_info pinfo
+      INNER JOIN task_info task ON pinfo.projectid = task.projectid AND task.classifycode ='001001'
+      INNER JOIN (
+      select dataid,taskid,filetype,dataname FROM task_res_file_info GROUP BY taskid
+      ) trf ON trf.taskid = task.taskid
+      INNER JOIN task_annotation_data tad ON tad.taskid = task.taskid
+      INNER JOIN `user` performer ON performer.userid = task.performerid
+      INNER JOIN project_user pu ON pu.projectid = pinfo.projectid AND pu.prolekey='pmanager'
+      INNER JOIN `user` pmanager ON pmanager.userid = pu.member
+      INNER JOIN data_content dc ON tad.dataid = dc.contentid
+      INNER JOIN data_info di ON dc.dataid = di.dataid
+--       INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+      WHERE
+      pinfo.projectid in (${ids})
+      AND (task.taskstate = '002005'
+        or  (task.taskstate = '002006' -- AND trfi.filetype = 'final'
+            )
+      )
+--       and trfi.state = 1
+      <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+        and  task.finishtime between #{starttime} and  #{endtime}
+      </if>
+      <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+        and  task.finishtime <![CDATA[ >= ]]> #{starttime}
+      </if>
+      <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+        and  task.finishtime <![CDATA[ <= ]]>  #{endtime}
+      </if>
+      ORDER BY pinfo.projectid,task.taskid,dc.dataid,CONVERT(dc.pn,SIGNED) ASC,CONVERT(dc.sn,SIGNED) ASC
+    </if>
+    <if test="ids == null">
+      SELECT
+      task.projectid,task.taskid,dc.dataid,dc.contentid,dc.content,dc.pn,dc.sn,dc.size,dc.anninfos,dc.annrelateinfos,tad.sourceid,
+      pinfo.projectname,di.dataname,tad.objectdataid,performer.username as performername,pmanager.username as pmanagername,task.callbacktimes,
+      SUBSTR(task.finishdeadline FROM 1 FOR 10) as finishdeadline,SUBSTR(task.finishtime FROM 1 FOR 10) as finishtime
+      FROM project_info pinfo
+      INNER JOIN task_info task ON pinfo.projectid = task.projectid AND task.classifycode ='001001'
+      INNER JOIN (
+      select dataid,taskid,filetype,dataname FROM task_res_file_info GROUP BY taskid
+      ) trf ON trf.taskid = task.taskid
+      INNER JOIN `user` performer ON performer.userid = task.performerid
+      INNER JOIN project_user pu ON pu.projectid = pinfo.projectid AND pu.prolekey='pmanager'
+      INNER JOIN `user` pmanager ON pmanager.userid = pu.member
+      INNER JOIN task_annotation_data tad ON tad.taskid = task.taskid
+      INNER JOIN data_content dc ON tad.dataid = dc.contentid
+      INNER JOIN data_info di ON dc.dataid = di.dataid
+--       INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+      WHERE 1=1
+      AND (task.taskstate = '002005'
+              or  (task.taskstate = '002006'  -- AND trfi.filetype = 'final'
+                  )
+      )
+--       and trfi.state = 1
+      <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+        and  task.finishtime between #{starttime} and  #{endtime}
+      </if>
+      <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+        and  task.finishtime <![CDATA[ >= ]]> #{starttime}
+      </if>
+      <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+        and  task.finishtime <![CDATA[ <= ]]>  #{endtime}
+      </if>
+      <if test="sysrole == 'user'">
+        AND pu.member = #{userid}
+      </if>
+      <if test="sysrole != 'manager'">
+        ORDER BY pinfo.projectid,task.taskid,dc.dataid,CONVERT(dc.pn,SIGNED) ASC,CONVERT(dc.sn,SIGNED) ASC
+      </if>
+      <if test="sysrole == 'manager'">
+        and pinfo.projectowner =  #{userid}
+        union
+        SELECT
+        task.projectid,task.taskid,dc.dataid,dc.contentid,dc.content,dc.pn,dc.sn,dc.size,dc.anninfos,dc.annrelateinfos,tad.sourceid,
+        pinfo.projectname,di.dataname,tad.objectdataid,performer.username as performername,pmanager.username as pmanagername,task.callbacktimes,
+        SUBSTR(task.finishdeadline FROM 1 FOR 10) as finishdeadline,SUBSTR(task.finishtime FROM 1 FOR 10) as finishtime
+        FROM project_info pinfo
+        INNER JOIN task_info task ON pinfo.projectid = task.projectid AND task.classifycode ='001001'
+        INNER JOIN (
+        select dataid,taskid,filetype,dataname FROM task_res_file_info GROUP BY taskid
+        ) trf ON trf.taskid = task.taskid
+        INNER JOIN `user` performer ON performer.userid = task.performerid
+        INNER JOIN project_user pu ON pu.projectid = pinfo.projectid AND pu.prolekey='pmanager' AND pu.member = #{userid}
+        INNER JOIN `user` pmanager ON pmanager.userid = pu.member
+        INNER JOIN task_annotation_data tad ON tad.taskid = task.taskid
+        INNER JOIN data_content dc ON tad.dataid = dc.contentid
+        INNER JOIN data_info di ON dc.dataid = di.dataid
+--         INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+        where 1=1
+        AND (task.taskstate = '002005'
+             or  (task.taskstate = '002006'  -- AND trfi.filetype = 'final'
+            )
+        )
+--         and trfi.state = 1
+        <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+          and  task.finishtime between #{starttime} and  #{endtime}
+        </if>
+        <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+          and  task.finishtime <![CDATA[ >= ]]> #{starttime}
+        </if>
+        <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+          and  task.finishtime <![CDATA[ <= ]]>  #{endtime}
+        </if>
+        ORDER BY projectid,taskid,dataid,CONVERT(pn,SIGNED) ASC,CONVERT(sn,SIGNED) ASC
+      </if>
+    </if>
+
+  </select>
+
+    <!--统计项目下成员标注的字数-->
+  <select id="wordStatisticOfMembers" parameterType="map" resultType="map">
+      SELECT u.username,IFNULL(counttask.countwords,0) as countwords,IFNULL(abandontask.abandonwords,0) as abandonwords,u.projectname
+      FROM
+        (select u.username,u.userid,p.projectname
+        FROM project_info p
+        INNER JOIN project_user pu ON  p.projectid = pu.projectid
+        INNER JOIN project_user mem ON p.projectid = mem.projectid and mem.prolekey != 'pmanager'
+        INNER JOIN `user` u on u.userid = mem.member
+        WHERE
+        p.projectid = #{projectid}
+        GROUP BY mem.member )  u
+        LEFT JOIN (
+            SELECT alltask.userid,alltask.username,SUM(alltask.wordsize) as countwords FROM (
+                SELECT  -- 第一种
+                performer.userid,performer.username,di.size,task.totalwords,
+                SUBSTRING_INDEX(SUBSTRING_INDEX(task.tasktitle,".",1),"_",-1) as wordsize,
+                "formal" as tasktype
+                FROM task_info task
+                INNER JOIN `user` performer ON task.performerid = performer.userid
+                INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                INNER JOIN data_info di ON tad.sourceid = di.dataid
+                INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                where task.taskstate = '002005'
+                AND task.finishdeadline BETWEEN #{starttime} AND #{endtime}
+                GROUP BY task.taskid
+                UNION ALL
+                (
+                    SELECT  -- 第一种
+                    performer.userid,performer.username,di.size,task.totalwords,
+                    SUBSTRING_INDEX(SUBSTRING_INDEX(task.tasktitle,".",1),"_",-1) as wordsize,
+                    "formal" as tasktype
+                    FROM task_info task
+                    INNER JOIN `user` performer ON task.performerid = performer.userid
+                    INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                    INNER JOIN data_info di ON tad.sourceid = di.dataid
+                    INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                    INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                    where task.taskstate = '002005'
+                    AND task.tasktitle LIKE "%EXTRA%"
+                    AND task.finishtime BETWEEN #{starttime} AND #{endtime}
+                    GROUP BY task.taskid
+                )
+                UNION ALL
+                (
+                    SELECT -- 第二种
+                    performer.userid,performer.username,di.size,task.totalwords,
+                    SUBSTRING_INDEX(SUBSTRING_INDEX(task.tasktitle,".",1),"_",-1) as wordsize,
+                    "formal" as tasktype
+                    FROM task_info task
+                    INNER JOIN `user` performer ON task.performerid = performer.userid
+                    INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                    INNER JOIN data_info di ON tad.sourceid = di.dataid
+                    INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                    INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                    INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+                    where task.taskstate = '002006'
+                    AND trfi.filetype = 'final'
+                    AND trfi.createtime BETWEEN #{starttime} AND #{endtime}
+                    GROUP BY task.taskid
+                )
+            ) alltask GROUP BY alltask.username
+        ) counttask ON u.userid = counttask.userid
+        LEFT JOIN (
+            SELECT t.userid,sum(t.size) as abandonwords FROM (
+                SELECT -- 报废的任务
+                performer.userid,performer.username,di.size,"abandon" as tasktype
+                FROM task_info task
+                INNER JOIN `user` performer ON task.performerid = performer.userid
+                INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                INNER JOIN data_info di ON tad.sourceid = di.dataid
+                INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+                where task.taskstate = '002007'
+                and task.updatetime BETWEEN #{starttime} AND #{endtime}
+                GROUP BY task.taskid
+            ) t GROUP BY t.userid
+        ) abandontask ON counttask.userid = abandontask.userid
+  </select>
+
+    <!--统计项目下成员标注的字数对应的任务详细信息-->
+    <select id="taskStatisticOfMembers" parameterType="map" resultType="map">
+      SELECT u.username,counttask.tasktitle,counttask.tasktype,counttask.wordsize,counttask.finishtime,IFNULL(counttask.finishdeadline,"") as finishdeadline
+        FROM
+        (select u.username,u.userid
+        FROM project_info p
+        INNER JOIN project_user pu ON  p.projectid = pu.projectid
+        INNER JOIN project_user mem ON p.projectid = mem.projectid and mem.prolekey != 'pmanager'
+        INNER JOIN `user` u on u.userid = mem.member
+        WHERE
+         p.projectid = #{projectid}
+        GROUP BY mem.member )  u
+        inner JOIN (
+            SELECT alltask.userid,alltask.username,alltask.tasktitle,alltask.wordsize,alltask.tasktype,alltask.finishtime,alltask.finishdeadline FROM (
+                SELECT  -- 第一种
+                task.taskid,task.tasktitle,performer.userid,performer.username,di.size,task.totalwords,td.dictDesc as taskstate,
+                SUBSTRING_INDEX(SUBSTRING_INDEX(task.tasktitle,".",1),"_",-1) as wordsize,"formal" as tasktype,task.finishdeadline,task.finishtime
+                FROM task_info task
+                INNER JOIN `user` performer ON task.performerid = performer.userid
+                INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                INNER JOIN data_info di ON tad.sourceid = di.dataid
+                INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                where task.taskstate = '002005'
+                AND task.finishdeadline BETWEEN #{starttime} AND #{endtime}
+                GROUP BY task.taskid
+                UNION
+                (
+                    SELECT  -- 第一种
+                    task.taskid,task.tasktitle,performer.userid,performer.username,di.size,task.totalwords,td.dictDesc as taskstate,
+                SUBSTRING_INDEX(SUBSTRING_INDEX(task.tasktitle,".",1),"_",-1) as wordsize,"formal" as tasktype,task.finishdeadline,task.finishtime
+                    FROM task_info task
+                    INNER JOIN `user` performer ON task.performerid = performer.userid
+                    INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                    INNER JOIN data_info di ON tad.sourceid = di.dataid
+                    INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                    INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                    where task.taskstate = '002005'
+                    AND task.tasktitle LIKE "%EXTRA%"
+                    AND task.finishtime BETWEEN #{starttime} AND #{endtime}
+                    GROUP BY task.taskid
+                )
+                UNION
+                (
+                    SELECT -- 第二种
+                    task.taskid,task.tasktitle,performer.userid,performer.username,di.size,task.totalwords,td.dictDesc as taskstate,
+                SUBSTRING_INDEX(SUBSTRING_INDEX(task.tasktitle,".",1),"_",-1) as wordsize,"formal" as tasktype,task.finishdeadline,task.finishtime
+                    FROM task_info task
+                    INNER JOIN `user` performer ON task.performerid = performer.userid
+                    INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                    INNER JOIN data_info di ON tad.sourceid = di.dataid
+                    INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                    INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                    INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+                    where task.taskstate = '002006'
+                    AND trfi.filetype = 'final'
+                    AND trfi.createtime BETWEEN #{starttime} AND #{endtime}
+                    GROUP BY task.taskid
+                )
+                UNION
+                (
+                    SELECT -- 报废的任务
+                    task.taskid,task.tasktitle,performer.userid,performer.username,di.size,task.totalwords,td.dictDesc as taskstate,
+                    SUBSTRING_INDEX(SUBSTRING_INDEX(tasktitle,".",1),"_",-1)  as wordsize,"abandon" as tasktype,task.finishdeadline,task.finishtime
+                    FROM task_info task
+                    INNER JOIN `user` performer ON task.performerid = performer.userid
+                    INNER JOIN task_annotation_data tad ON task.taskid = tad.taskid
+                    INNER JOIN data_info di ON tad.sourceid = di.dataid
+                    INNER JOIN task_dict td ON task.taskstate = td.dictCode
+                    INNER JOIN task_dict td2 ON task.tasktype = td2.dictCode
+                    INNER JOIN task_res_file_info trfi ON trfi.taskid = task.taskid
+                    where task.taskstate = '002007'
+                    and task.updatetime BETWEEN #{starttime} AND #{endtime}
+                    GROUP BY task.taskid
+                )
+            ) alltask
+        ) counttask ON u.userid = counttask.userid
+        ORDER BY counttask.username,SUBSTR(counttask.tasktitle FROM 1 FOR 9) ASC
+    </select>
+</mapper>

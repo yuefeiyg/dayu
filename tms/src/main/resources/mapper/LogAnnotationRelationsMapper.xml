@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.LogAnnotationRelationsMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.LogAnnotationRelations" >
+    <id column="logid" property="logid" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+    <result column="userid" property="userid" jdbcType="VARCHAR" />
+    <result column="createordellable" property="createordellable" jdbcType="VARCHAR" />
+    <result column="operatetime" property="operatetime" jdbcType="VARCHAR" />
+    <result column="objectdataid" property="objectdataid" jdbcType="VARCHAR" />
+    <result column="relationdataid" property="relationdataid" jdbcType="VARCHAR" />
+    <result column="labelid" property="labelid" jdbcType="VARCHAR" />
+    <result column="fromitemid" property="fromitemid" jdbcType="VARCHAR" />
+    <result column="toitemid" property="toitemid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    logid, taskid, userid,createordellable, operatetime,
+    objectdataid, relationdataid, labelid, fromitemid, toitemid
+  </sql>
+
+  <insert id="batchInsertLogRelations" parameterType="java.util.List" >
+    insert into log_annotation_relations
+    (logid, taskid, userid, createordellable, operatetime,
+    objectdataid, relationdataid, labelid, fromitemid, toitemid)
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.logid,jdbcType=VARCHAR}, #{item.taskid,jdbcType=VARCHAR}, #{item.userid,jdbcType=VARCHAR},
+      #{item.createordellable,jdbcType=VARCHAR}, #{item.operatetime,jdbcType=VARCHAR},
+      #{item.objectdataid,jdbcType=VARCHAR}, #{item.relationdataid,jdbcType=VARCHAR}, #{item.labelid,jdbcType=VARCHAR},
+      #{item.fromitemid,jdbcType=VARCHAR}, #{item.toitemid,jdbcType=VARCHAR}
+      )
+    </foreach>
+  </insert>
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from log_annotation_relations
+    where logid = #{logid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from log_annotation_relations
+    where logid = #{logid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.LogAnnotationRelations" >
+    insert into log_annotation_relations (logid, taskid, userid, 
+     createordellable, operatetime,
+      objectdataid, relationdataid, labelid, 
+      fromitemid, toitemid)
+    values (#{logid,jdbcType=VARCHAR}, #{taskid,jdbcType=VARCHAR}, #{userid,jdbcType=VARCHAR}, 
+       #{createordellable,jdbcType=VARCHAR}, #{operatetime,jdbcType=VARCHAR},
+      #{objectdataid,jdbcType=VARCHAR}, #{relationdataid,jdbcType=VARCHAR}, #{labelid,jdbcType=VARCHAR}, 
+      #{fromitemid,jdbcType=VARCHAR}, #{toitemid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.LogAnnotationRelations" >
+    insert into log_annotation_relations
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="logid != null" >
+        logid,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+      <if test="userid != null" >
+        userid,
+      </if>
+
+      <if test="createordellable != null" >
+        createordellable,
+      </if>
+      <if test="operatetime != null" >
+        operatetime,
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid,
+      </if>
+      <if test="relationdataid != null" >
+        relationdataid,
+      </if>
+      <if test="labelid != null" >
+        labelid,
+      </if>
+      <if test="fromitemid != null" >
+        fromitemid,
+      </if>
+      <if test="toitemid != null" >
+        toitemid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="logid != null" >
+        #{logid,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+
+      <if test="createordellable != null" >
+        #{createordellable,jdbcType=VARCHAR},
+      </if>
+      <if test="operatetime != null" >
+        #{operatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="relationdataid != null" >
+        #{relationdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="fromitemid != null" >
+        #{fromitemid,jdbcType=VARCHAR},
+      </if>
+      <if test="toitemid != null" >
+        #{toitemid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.LogAnnotationRelations" >
+    update log_annotation_relations
+    <set >
+      <if test="taskid != null" >
+        taskid = #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        userid = #{userid,jdbcType=VARCHAR},
+      </if>
+
+      <if test="createordellable != null" >
+        createordellable = #{createordellable,jdbcType=VARCHAR},
+      </if>
+      <if test="operatetime != null" >
+        operatetime = #{operatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="objectdataid != null" >
+        objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="relationdataid != null" >
+        relationdataid = #{relationdataid,jdbcType=VARCHAR},
+      </if>
+      <if test="labelid != null" >
+        labelid = #{labelid,jdbcType=VARCHAR},
+      </if>
+      <if test="fromitemid != null" >
+        fromitemid = #{fromitemid,jdbcType=VARCHAR},
+      </if>
+      <if test="toitemid != null" >
+        toitemid = #{toitemid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.LogAnnotationRelations" >
+    update log_annotation_relations
+    set taskid = #{taskid,jdbcType=VARCHAR},
+      userid = #{userid,jdbcType=VARCHAR},
+      createordellable = #{createordellable,jdbcType=VARCHAR},
+      operatetime = #{operatetime,jdbcType=VARCHAR},
+      objectdataid = #{objectdataid,jdbcType=VARCHAR},
+      relationdataid = #{relationdataid,jdbcType=VARCHAR},
+      labelid = #{labelid,jdbcType=VARCHAR},
+      fromitemid = #{fromitemid,jdbcType=VARCHAR},
+      toitemid = #{toitemid,jdbcType=VARCHAR}
+    where logid = #{logid,jdbcType=VARCHAR}
+  </update>
+</mapper>

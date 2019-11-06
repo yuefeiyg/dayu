@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.ProjectHisOwnerMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.ProjectHisOwner" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="projectid" property="projectid" jdbcType="VARCHAR" />
+    <result column="formerowner" property="formerowner" jdbcType="VARCHAR" />
+    <result column="departuretime" property="departuretime" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, projectid, formerowner, departuretime
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from project_his_owner
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from project_his_owner
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.ProjectHisOwner" >
+    insert into project_his_owner (id, projectid, formerowner, 
+      departuretime)
+    values (#{id,jdbcType=INTEGER}, #{projectid,jdbcType=VARCHAR}, #{formerowner,jdbcType=VARCHAR}, 
+      #{departuretime,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.ProjectHisOwner" >
+    insert into project_his_owner
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="projectid != null" >
+        projectid,
+      </if>
+      <if test="formerowner != null" >
+        formerowner,
+      </if>
+      <if test="departuretime != null" >
+        departuretime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="projectid != null" >
+        #{projectid,jdbcType=VARCHAR},
+      </if>
+      <if test="formerowner != null" >
+        #{formerowner,jdbcType=VARCHAR},
+      </if>
+      <if test="departuretime != null" >
+        #{departuretime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.ProjectHisOwner" >
+    update project_his_owner
+    <set >
+      <if test="projectid != null" >
+        projectid = #{projectid,jdbcType=VARCHAR},
+      </if>
+      <if test="formerowner != null" >
+        formerowner = #{formerowner,jdbcType=VARCHAR},
+      </if>
+      <if test="departuretime != null" >
+        departuretime = #{departuretime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.ProjectHisOwner" >
+    update project_his_owner
+    set projectid = #{projectid,jdbcType=VARCHAR},
+      formerowner = #{formerowner,jdbcType=VARCHAR},
+      departuretime = #{departuretime,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

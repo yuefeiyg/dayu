@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationCustomizeLabelMapper" >
+  <insert id="insertSelective" parameterType="map" >
+    insert into annotation_customize_label
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="labelid != null" >labelid,</if>
+      <if test="templateid != null" >templateid,</if>
+      <if test="parentlabelid != null" >parentlabelid,</if>
+      <if test="labelname != null" >labelname,</if>
+      <if test="taskid != null" >taskid,</if>
+      <if test="labelinfo != null" >labelinfo,</if>
+      <if test="createuserid != null" >createuserid,</if>
+      <if test="createtime != null" >createtime,</if>
+      <if test="updatetime != null" >updatetime,</if>
+      <if test="labelstate != null" >labelstate,</if>
+      <if test="sequence != null" >sequence,</if>
+      <if test="depth != null" >depth,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="labelid != null" >#{labelid,jdbcType=VARCHAR},</if>
+      <if test="templateid != null" >#{templateid,jdbcType=VARCHAR},</if>
+      <if test="parentlabelid != null" >#{parentlabelid,jdbcType=VARCHAR},</if>
+      <if test="labelname != null" >#{labelname,jdbcType=VARCHAR},</if>
+      <if test="taskid != null" >#{taskid,jdbcType=VARCHAR},</if>
+      <if test="labelinfo != null" >#{labelinfo,jdbcType=VARCHAR},</if>
+      <if test="createuserid != null" >#{createuserid,jdbcType=VARCHAR},</if>
+      <if test="createtime != null" >#{createtime,jdbcType=VARCHAR},</if>
+      <if test="updatetime != null" >#{updatetime,jdbcType=VARCHAR},</if>
+      <if test="labelstate != null" >#{labelstate,jdbcType=INTEGER},</if>
+      <if test="sequence != null" > #{sequence,jdbcType=VARCHAR},</if>
+      <if test="depth != null" > #{depth,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+
+
+  <!--根据模板id查询标签列表信息-->
+  <select id="getLables" resultType="map" parameterType="map">
+      SELECT acl.labelid,acl.labelname,acl.labelinfo,acl.parentlabelid,acl.createuserid,acl.depth,"custome" as labeltype
+      FROM annotation_customize_label acl
+      where  acl.labelstate = 1
+      <if test="taskid != null">
+        AND acl.taskid = #{taskid}
+      </if>
+      <if test="templateid != null">
+        AND acl.templateid = #{templateid}
+      </if>
+      <if test="userid != null">
+        AND acl.createuserid = #{userid}
+      </if>
+      ORDER BY acl.createtime ASC
+  </select>
+    <!--根据条件查询标签列表信息-->
+    <select id="getParentLabel" resultType="map" parameterType="map">
+        SELECT acl.labelid,acl.labelname,acl.labelinfo,acl.parentlabelid,acl.createuserid,acl.depth,"custome" as labeltype,
+        (SELECT IFNULL(MAX(children.sequence),0) + 1 AS sequence
+         FROM annotation_customize_label children
+         WHERE children.parentlabelid = #{parentlabelid}) as sequence
+        FROM annotation_customize_label acl
+        where  acl.labelid = #{parentlabelid}
+    </select>
+
+</mapper>

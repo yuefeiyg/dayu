@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.CompareResultMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.CompareResult" >
+    <id column="resultid" property="resultid" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="executor" property="executor" jdbcType="VARCHAR" />
+    <result column="path" property="path" jdbcType="VARCHAR" />
+    <result column="executetime" property="executetime" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    resultid, name, executor, path, executetime
+  </sql>
+
+
+  <select id="batchSelectCompareResultsByResultids" parameterType="java.util.List" resultType="map">
+    SELECT
+    <include refid="Base_Column_List" />
+    from compare_result
+    WHERE 1=1
+    AND  resultid in (
+    <foreach collection="list" item="resultid" index="index" separator=",">
+      #{resultid}
+    </foreach>
+    )
+  </select>
+
+  <select id="countResults" parameterType="map" resultType="int">
+    SELECT COUNT(1)
+    from (
+        SELECT
+        cr.resultid
+        from compare_result cr
+        INNER JOIN `user` u ON cr.executor = u.userid
+        LEFT JOIN compare_result_datacode crd ON  crd.resultid = cr.resultid
+        where 1=1
+        <if test="role == 'pmanager' and sysrole == 'user'">
+          and executor = #{executor,jdbcType=VARCHAR}
+        </if>
+        <if test="query != null and query != ''">
+          and (crd.datacode like  concat("%",concat(#{query},"%")) or cr.name like  concat("%",concat(#{query},"%"))
+          or u.username like concat("%",concat(#{query},"%")) )
+        </if>
+        <if test="filename != null and filename != ''">
+          and cr.name like  concat("%",concat(#{filename},"%"))
+        </if>
+        <if test="excutor != null and excutor != ''">
+          and cr.executor like  concat("%",concat(#{excutor},"%"))
+        </if>
+        <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+          and  cr.executetime between #{starttime} and  #{endtime}
+        </if>
+        <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+          and  cr.executetime <![CDATA[ >= ]]> #{starttime}
+        </if>
+        <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+          and  cr.executetime <![CDATA[ <= ]]>  #{endtime}
+        </if>
+        <if test="sysrole == 'manager'">
+          AND executor IN (
+          SELECT pus.member
+          FROM project_user pus
+          LEFT JOIN project_info pif ON pif.projectid = pus.projectid
+          WHERE pif.projectowner = #{executor,jdbcType=VARCHAR}
+          AND pus.prolekey = 'pmanager'
+          )
+          union
+          SELECT
+          cr.resultid
+          from compare_result cr
+          INNER JOIN `user` u ON cr.executor = u.userid
+          LEFT JOIN compare_result_datacode crd ON  crd.resultid = cr.resultid
+          where  executor = #{executor,jdbcType=VARCHAR}
+          <if test="query != null and query != ''">
+            and (crd.datacode like  concat("%",concat(#{query},"%")) or cr.name like  concat("%",concat(#{query},"%"))
+            or u.username like concat("%",concat(#{query},"%")) )
+          </if>
+          <if test="filename != null and filename != ''">
+            and cr.name like  concat("%",concat(#{filename},"%"))
+          </if>
+          <if test="excutor != null and excutor != ''">
+            and cr.executor like  concat("%",concat(#{excutor},"%"))
+          </if>
+          <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+            and  cr.executetime between #{starttime} and  #{endtime}
+          </if>
+          <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+            and  cr.executetime <![CDATA[ >= ]]> #{starttime}
+          </if>
+          <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+            and  cr.executetime <![CDATA[ <= ]]>  #{endtime}
+          </if>
+        </if>
+
+    ) a
+  </select>
+
+  <select id="getResultInfosByExcutor" parameterType="map" resultType="map">
+    SELECT
+    cr.resultid,cr.`name` as filename,cr.executor as executorid,cr.executetime,u.username as executor
+    from compare_result cr
+    INNER JOIN `user` u ON cr.executor = u.userid
+    LEFT JOIN compare_result_datacode crd ON  crd.resultid = cr.resultid
+    where 1=1
+    <if test="role == 'pmanager' and sysrole == 'user'">
+      and executor = #{executor,jdbcType=VARCHAR}
+    </if>
+    <if test="query != null and query != ''">
+      and (crd.datacode like  concat("%",concat(#{query},"%")) or cr.name like  concat("%",concat(#{query},"%"))
+      or u.username like concat("%",concat(#{query},"%")) )
+    </if>
+    <if test="filename != null and filename != ''">
+      and cr.name like  concat("%",concat(#{filename},"%"))
+    </if>
+    <if test="excutor != null and excutor != ''">
+      and cr.executor like  concat("%",concat(#{excutor},"%"))
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  cr.executetime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  cr.executetime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  cr.executetime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+    <if test="sysrole == 'manager'">
+      AND executor IN (
+      SELECT pus.member
+      FROM project_user pus
+      LEFT JOIN project_info pif ON pif.projectid = pus.projectid
+      WHERE pif.projectowner = #{executor,jdbcType=VARCHAR}
+      AND pus.prolekey = 'pmanager'
+      )
+      union
+      SELECT
+      cr.resultid,cr.`name` as filename,cr.executor as executorid,cr.executetime,u.username as executor
+      from compare_result cr
+      INNER JOIN `user` u ON cr.executor = u.userid
+      LEFT JOIN compare_result_datacode crd ON  crd.resultid = cr.resultid
+      where  executor = #{executor,jdbcType=VARCHAR}
+      <if test="query != null and query != ''">
+        and (crd.datacode like  concat("%",concat(#{query},"%")) or cr.name like  concat("%",concat(#{query},"%"))
+        or u.username like concat("%",concat(#{query},"%")) )
+      </if>
+      <if test="filename != null and filename != ''">
+        and cr.name like  concat("%",concat(#{filename},"%"))
+      </if>
+      <if test="excutor != null and excutor != ''">
+        and cr.executor like  concat("%",concat(#{excutor},"%"))
+      </if>
+      <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+        and  cr.executetime between #{starttime} and  #{endtime}
+      </if>
+      <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+        and  cr.executetime <![CDATA[ >= ]]> #{starttime}
+      </if>
+      <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+        and  cr.executetime <![CDATA[ <= ]]>  #{endtime}
+      </if>
+    </if>
+
+    ORDER BY executetime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from compare_result
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from compare_result
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.CompareResult" >
+    insert into compare_result (resultid, name, executor, 
+      path, executetime)
+    values (#{resultid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{executor,jdbcType=VARCHAR}, 
+      #{path,jdbcType=VARCHAR}, #{executetime,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.CompareResult" >
+    insert into compare_result
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="resultid != null" >
+        resultid,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="executor != null" >
+        executor,
+      </if>
+      <if test="path != null" >
+        path,
+      </if>
+      <if test="executetime != null" >
+        executetime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="resultid != null" >
+        #{resultid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="executor != null" >
+        #{executor,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="executetime != null" >
+        #{executetime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.CompareResult" >
+    update compare_result
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="executor != null" >
+        executor = #{executor,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        path = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="executetime != null" >
+        executetime = #{executetime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.CompareResult" >
+    update compare_result
+    set name = #{name,jdbcType=VARCHAR},
+      executor = #{executor,jdbcType=VARCHAR},
+      path = #{path,jdbcType=VARCHAR},
+      executetime = #{executetime,jdbcType=VARCHAR}
+    where resultid = #{resultid,jdbcType=VARCHAR}
+  </update>
+</mapper>

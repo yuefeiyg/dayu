@@ -1,0 +1,654 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.DataInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.DataInfo" >
+    <id column="dataid" property="dataid" jdbcType="VARCHAR" />
+    <result column="dsid" property="dsid" jdbcType="VARCHAR" />
+    <result column="dataname" property="dataname" jdbcType="VARCHAR" />
+    <result column="dataobjecttype" property="dataobjecttype" jdbcType="VARCHAR" />
+    <result column="size" property="size" jdbcType="VARCHAR" />
+    <result column="scenariotype" property="scenariotype" jdbcType="VARCHAR" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="owner" property="owner" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="VARCHAR" />
+    <result column="datastate" property="datastate" jdbcType="VARCHAR" />
+    <result column="datapath" property="datapath" jdbcType="VARCHAR" />
+    <result column="segmentation" property="segmentation" jdbcType="VARCHAR" />
+    <result column="datausingstate" property="datausingstate" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    dataid, dsid, dataname, dataobjecttype, size, scenariotype, creator, owner, createtime, 
+    datastate, datapath, segmentation, datausingstate, note
+  </sql>
+
+  <select id="getDataInfoBySourceId" parameterType="java.lang.String" resultType="map">
+     SELECT dio.dataname,dio.size,dio.segmentation,COUNT(dc.contentid) as num
+      FROM data_info dio
+      LEFT JOIN data_content dc ON dc.dataid = dio.dataid
+      WHERE dio.dataid = #{sourceid,jdbcType=VARCHAR}
+  </select>
+  <!--根据数据集id查询文件数据信息列表-->
+  <select id="getDataInfosByDsids" parameterType="java.util.List" resultMap="BaseResultMap">
+    SELECT
+    dataid,dsid,dataname,datastate,datapath,datatype
+    FROM
+    data_info
+    WHERE
+    datatype ='0'
+    AND datastate = '1'
+    AND dsid IN
+    <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </select>
+
+
+  <insert id="insertDataInfoSelective" parameterType="com.blcultra.model.DataInfo" >
+    insert into data_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="dataid != null" >
+        dataid,
+      </if>
+      <if test="dsid != null" >
+        dsid,
+      </if>
+      <if test="dataname != null" >
+        dataname,
+      </if>
+      <if test="dataobjecttype != null" >
+        dataobjecttype,
+      </if>
+      <if test="size != null" >
+        size,
+      </if>
+      <if test="scenariotype != null" >
+        scenariotype,
+      </if>
+      <if test="creator != null" >
+        creator,
+      </if>
+      <if test="owner != null" >
+        owner,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="datastate != null" >
+        datastate,
+      </if>
+      <if test="datapath != null" >
+        datapath,
+      </if>
+      <if test="segmentation != null" >
+        segmentation,
+      </if>
+      <if test="datausingstate != null" >
+        datausingstate,
+      </if>
+      <if test="datatype != null" >
+        datatype,
+      </if>
+      <if test="note != null" >
+        note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="dataid != null" >
+        #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="dsid != null" >
+        #{dsid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataname != null" >
+        #{dataname,jdbcType=VARCHAR},
+      </if>
+      <if test="dataobjecttype != null" >
+        #{dataobjecttype,jdbcType=VARCHAR},
+      </if>
+      <if test="size != null" >
+        #{size,jdbcType=VARCHAR},
+      </if>
+      <if test="scenariotype != null" >
+        #{scenariotype,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null" >
+        #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="owner != null" >
+        #{owner,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="datastate != null" >
+        #{datastate,jdbcType=VARCHAR},
+      </if>
+      <if test="datapath != null" >
+        #{datapath,jdbcType=VARCHAR},
+      </if>
+      <if test="segmentation != null" >
+        #{segmentation,jdbcType=VARCHAR},
+      </if>
+      <if test="datausingstate != null" >
+        #{datausingstate,jdbcType=VARCHAR},
+      </if>
+      <if test="datatype != null" >
+        #{datatype,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from data_info
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from data_info
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </delete>
+  <!--批量插入文本数据-->
+  <insert id="addDataInfoBatch" parameterType="java.util.List" >
+    insert into data_info
+        (dataid,dsid,dataname,dataobjecttype,`size`,scenariotype,creator,owner,createtime,datastate,datapath,segmentation,
+    datausingstate,datatype,note)
+    values
+    <foreach collection ="list" item="datainfo" index= "index" separator =",">
+      (
+      #{datainfo.dataid}, #{datainfo.dsid},
+      #{datainfo.dataname},#{datainfo.dataobjecttype},
+      #{datainfo.size}, #{datainfo.scenariotype},
+      #{datainfo.creator}, #{datainfo.owner},
+      #{datainfo.createtime}, #{datainfo.datastate},
+      #{datainfo.datapath}, #{datainfo.segmentation},
+      #{datainfo.datausingstate},#{datainfo.datatype},#{datainfo.note}
+      )
+    </foreach>
+  </insert>
+
+  <!--根据数据集id查询可用数据文件列表-->
+  <select id="getDataInfoInUseListByDsid" resultType="map" parameterType="java.lang.String" >
+    select
+     dataid, dsid, dataname, dataobjecttype, `size`, scenariotype, creator, owner, createtime,
+      datastate, datapath, segmentation, datausingstate, datatype, note
+    from data_info
+    where dsid = #{dsid,jdbcType=VARCHAR}
+    and  datastate = 1
+  </select>
+
+  <!--根据数据集id查询所有数据文件列表-->
+  <select id="getDataInfoListByDsid" resultType="map" parameterType="java.lang.String" >
+    select
+     dataid, dsid, dataname, dataobjecttype, `size`, scenariotype, creator, owner, createtime,
+      datastate, datapath, segmentation, datausingstate, note
+    from data_info
+    where dsid = #{dsid,jdbcType=VARCHAR}
+  </select>
+
+  <!--根据数据集id查询可用数据文件列表的文件内容-->
+  <select id="getDataInfoContentsInUseListByDsid" resultType="map" parameterType="java.lang.String" >
+    SELECT di.dataname,di.datapath,di.note,di.size AS wordcount,dc.contentid,dc.content,dc.dataid,dc.pn,dc.sn,dc.size
+    FROM  data_info  di INNER JOIN data_content dc ON di.dataid = dc.dataid
+    WHERE  di.datastate = 1
+    AND  di.dsid = #{dsid,jdbcType=VARCHAR}
+  </select>
+
+
+  <!--根据数集id查询可用数据文件列表的文件内容-->
+  <select id="getDataInfoAllByDataids" resultType="map" parameterType="java.lang.String" >
+    SELECT
+        di.dataname,di.datapath,di.note,di.size AS wordcount,dc.contentid,dc.content,dc.anninfos,dc.dataid,dc.pn,dc.sn,dc.size,
+		aoi.dataitemid,aoi.itemid,aoi.labelid,aoi.item,aoi.startoffset,aoi.endoffset,aoi.bndbox
+    FROM  data_info  di
+    INNER JOIN data_content dc ON di.dataid = dc.dataid
+	LEFT JOIN annotation_object_info  aoi ON dc.contentid = aoi.contentid
+	LEFT JOIN annotation_object_relation_info aori ON dc.contentid = aori.contentid
+    WHERE  di.datastate = 1
+    AND  di.dataid in ${dataids}
+    ORDER BY dc.pn,dc.sn
+  </select>
+
+  <!--根据数据集id删除数据文件-->
+  <delete id="deleteByDataSetId" parameterType="java.lang.String" >
+    delete from data_info  where  dsid = #{dsid,jdbcType=VARCHAR}
+  </delete>
+
+
+  <!--查询属于某一个数据集的数据集列表-->
+  <select id="getDataObjectListByDsid" resultType="map" parameterType="map" >
+    SELECT di.dataid, di.dsid, di.dataname, di.dataobjecttype, di.`size`, di.scenariotype, di.creator, di.`owner`, di.createtime,
+    di.datastate, di.datapath, di.segmentation, di.datausingstate, di.note,scedict.dictDesc AS scenariotypename,
+    datatypedict.dictDesc AS dataobjecttypename,segdict.dictDesc AS segmentationname
+    FROM data_info di
+    left JOIN task_dict scedict ON di.scenariotype = scedict.dictCode
+    INNER JOIN task_dict datatypedict ON di.dataobjecttype = datatypedict.dictCode
+    INNER JOIN task_dict segdict ON di.segmentation = segdict.dictCode
+    WHERE  datastate = 1
+    <if test="dsid != null and dsid != ''">
+      and dsid = #{dsid}
+    </if>
+    <if test="keyword != null and keyword != ''">
+      AND (
+        di.dataname LIKE CONCAT("%",CONCAT(#{keyword},"%")) or di.note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      )
+    </if>
+    <if test="dataname != null and dataname != ''">
+      AND dataname LIKE CONCAT("%",CONCAT(#{dataname},"%"))
+    </if>
+    <if test="owner != null and owner != ''">
+      and  owner = #{owner}
+    </if>
+    <if test="dataobjecttype != null and dataobjecttype != ''">
+      and  dataobjecttype = #{dataobjecttype}
+    </if>
+    <if test="scenariotype != null and scenariotype != ''">
+      and  scenariotype = #{scenariotype}
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  di.createtime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  di.createtime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  di.createtime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+    ORDER BY di.createtime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+  <select id="getDataObjectListCountByDsid" resultType="int" parameterType="map" >
+    select count(1)
+    FROM data_info
+    WHERE  datastate = 1
+    <if test="dsid != null and dsid != ''">
+      and dsid = #{dsid}
+    </if>
+    <if test="keyword != null and keyword != ''">
+      AND (
+      dataname LIKE CONCAT("%",CONCAT(#{keyword},"%")) or note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      )
+    </if>
+    <if test="dataname != null and dataname != ''">
+      AND dataname LIKE CONCAT("%",CONCAT(#{dataname},"%"))
+    </if>
+    <if test="dataobjecttype != null and dataobjecttype != ''">
+      and  dataobjecttype = #{dataobjecttype}
+    </if>
+    <if test="scenariotype != null and scenariotype != ''">
+      and  scenariotype = #{scenariotype}
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  createtime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  createtime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  createtime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+  </select>
+
+  <!--删除具体的数据，可以批量删除(根据owner和dataid进行删除)-->
+  <delete id="deleteDataObjectByParam" parameterType="map" >
+    delete from data_info
+    where dataid in ${dataid}
+    and owner = #{owner}
+  </delete>
+
+  <!--根据dataid查询datainfo信息和标注信息-->
+  <select id="getDataInfoByDataId" resultType="map" parameterType="java.lang.String" >
+    SELECT
+        di.dataname,di.datapath,di.note,di.size AS wordcount,dc.contentid,dc.content,dc.anninfos,dc.dataid,dc.pn,dc.sn,dc.size,
+		aoi.dataitemid,aoi.itemid,aoi.labelid,aoi.item,aoi.startoffset,aoi.endoffset,aoi.bndbox
+    FROM  data_info  di
+    INNER JOIN data_content dc ON di.dataid = dc.dataid
+	LEFT JOIN annotation_object_info  aoi ON dc.contentid = aoi.contentid
+	LEFT JOIN annotation_object_relation_info aori ON dc.contentid = aori.contentid
+    WHERE  di.dataid = #{dataid}
+    ORDER BY dc.pn,dc.sn
+  </select>
+
+  <insert id="insertSelective" parameterType="map" >
+    insert into data_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="dataid != null" >
+        dataid,
+      </if>
+      <if test="dsid != null" >
+        dsid,
+      </if>
+      <if test="dataname != null" >
+        dataname,
+      </if>
+      <if test="dataobjecttype != null" >
+        dataobjecttype,
+      </if>
+      <if test="size != null" >
+        size,
+      </if>
+      <if test="scenariotype != null" >
+        scenariotype,
+      </if>
+      <if test="creator != null" >
+        creator,
+      </if>
+      <if test="owner != null" >
+        owner,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="datastate != null" >
+        datastate,
+      </if>
+      <if test="datapath != null" >
+        datapath,
+      </if>
+      <if test="segmentation != null" >
+        segmentation,
+      </if>
+      <if test="datausingstate != null" >
+        datausingstate,
+      </if>
+      <if test="note != null" >
+        note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="dataid != null" >
+        #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="dsid != null" >
+        #{dsid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataname != null" >
+        #{dataname,jdbcType=VARCHAR},
+      </if>
+      <if test="dataobjecttype != null" >
+        #{dataobjecttype,jdbcType=VARCHAR},
+      </if>
+      <if test="size != null" >
+        #{size,jdbcType=VARCHAR},
+      </if>
+      <if test="scenariotype != null" >
+        #{scenariotype,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null" >
+        #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="owner != null" >
+        #{owner,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="datastate != null" >
+        #{datastate,jdbcType=VARCHAR},
+      </if>
+      <if test="datapath != null" >
+        #{datapath,jdbcType=VARCHAR},
+      </if>
+      <if test="segmentation != null" >
+        #{segmentation,jdbcType=VARCHAR},
+      </if>
+      <if test="datausingstate != null" >
+        #{datausingstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.DataInfo" >
+    update data_info
+    <set >
+      <if test="dsid != null" >
+        dsid = #{dsid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataname != null" >
+        dataname = #{dataname,jdbcType=VARCHAR},
+      </if>
+      <if test="dataobjecttype != null" >
+        dataobjecttype = #{dataobjecttype,jdbcType=VARCHAR},
+      </if>
+      <if test="size != null" >
+        size = #{size,jdbcType=VARCHAR},
+      </if>
+      <if test="scenariotype != null" >
+        scenariotype = #{scenariotype,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null" >
+        creator = #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="owner != null" >
+        owner = #{owner,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createtime = #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="datastate != null" >
+        datastate = #{datastate,jdbcType=VARCHAR},
+      </if>
+      <if test="datapath != null" >
+        datapath = #{datapath,jdbcType=VARCHAR},
+      </if>
+      <if test="segmentation != null" >
+        segmentation = #{segmentation,jdbcType=VARCHAR},
+      </if>
+      <if test="datausingstate != null" >
+        datausingstate = #{datausingstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </update>
+  <select id="selectDataInfoByDataIds" resultType="map" parameterType="java.util.List" >
+    SELECT
+    di.dataid,di.dataname,di.dataobjecttype,di.datapath,di.size AS wordcount,di.datatype
+    FROM  data_info  di
+    WHERE  di.datastate = 1
+    AND  di.dataid in (
+    <foreach collection ="list" item="dataid" index= "index" separator =",">
+      #{dataid}
+    </foreach>
+    )
+  </select>
+  <!--根据数集id查询可用数据文件列表的文件内容-->
+  <select id="getDataInfoByDataIds" resultType="map" parameterType="java.util.List" >
+    SELECT
+    di.dataid,di.dataname,di.dataobjecttype,di.datapath,di.size AS wordcount,di.datatype,dc.contentid,dc.content,dc.anninfos,dc.dataid,dc.pn,dc.sn,dc.size
+    FROM  data_info  di
+    INNER JOIN data_content dc ON di.dataid = dc.dataid
+    WHERE  di.datastate = 1
+    AND  di.dataid in (
+    <foreach collection ="list" item="dataid" index= "index" separator =",">
+    #{dataid}
+    </foreach>
+    )
+    ORDER BY dc.pn,dc.sn
+  </select>
+
+  <select id="getDataWordsByDataIds" resultType="int" parameterType="java.util.List" >
+    SELECT
+    count(di.size) AS totalwords
+    FROM  data_info  di
+    WHERE  di.datastate = 1
+    AND  di.dataid in (
+    <foreach collection ="list" item="dataid" index= "index" separator =",">
+      #{dataid}
+    </foreach>
+    )
+  </select>
+
+  <select id="getDataIds" parameterType="java.lang.String" resultType="java.lang.String" >
+    select di.dataid
+    from data_info  di
+    where di.dsid = #{dsId}
+  </select>
+
+  <!--根据数集id查询可用数据文件列表的文件内容-->
+  <select id="getDataIdsByDataNameAndDsName" resultType="map" parameterType="map" >
+    SELECT di.dataid,di.dataname FROM data_info di
+    INNER JOIN dataset_info dsi ON di.dsid = dsi.dsid
+    where di.datastate = '1' and dsi.dsowner = #{dsowner} AND  di.dataname in (${datanames})  AND dsi.dsname = #{dsname}
+  </select>
+
+  <update id="updateDeleteByDataSetId" parameterType="map">
+    update data_info
+    <set >
+      <if test="datastate != null" >
+        datastate = #{datastate,jdbcType=VARCHAR},
+      </if>
+      <if test="datausingstate != null" >
+        datausingstate = #{datausingstate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dsid = #{dsid}
+  </update>
+
+
+  <update id="updatedeleteDataObjectByids" parameterType="map">
+    update data_info
+    <set >
+      <if test="datastate != null" >
+        datastate = #{datastate,jdbcType=VARCHAR},
+      </if>
+      <if test="datausingstate != null" >
+        datausingstate = #{datausingstate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where
+      dataid in (${dataid})
+  </update>
+
+  <update id="updatedeleteDataObjectByid" parameterType="map">
+    update data_info
+    <set >
+      <if test="datastate != null" >
+        datastate = #{datastate,jdbcType=VARCHAR},
+      </if>
+      <if test="datausingstate != null" >
+        datausingstate = #{datausingstate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where
+    dataid  = #{dataid}
+  </update>
+  <!--下载数据集文件时通过数据集id查询数据文件存储路径-->
+  <select id="selectDataUrlByDsids" parameterType="map" resultType="map">
+    select dataid,dsid,datapath FROM data_info WHERE dsid in (${dsids}) and datastate = 1 order by dsid
+  </select>
+
+  <!--下载数据集文件时通过数据集id查询数据文件存储路径-->
+  <select id="selectDataUrlByDsid" parameterType="java.lang.String" resultType="map">
+    select dataid,dsid,datapath FROM data_info WHERE dsid = #{dsid} and datastate = 1
+  </select>
+
+
+  <select id="selectDataInfoByids" parameterType="map" resultType="map">
+    select dataid,dsid,datapath FROM data_info WHERE dataid in (${dataids})
+  </select>
+
+  <select id="selectDataInfoByid" parameterType="java.lang.String" resultType="map">
+    select dataid,dsid,datapath FROM data_info WHERE dataid = #{dataid}
+  </select>
+
+  <!--获取数据源文本列表-->
+  <select id="getDataTextList" resultType="map" parameterType="map" >
+    SELECT di.dataid,di.dsid,di.dataname,di.dataobjecttype,di.size,di.scenariotype,di.createtime
+    FROM
+    data_info di
+    INNER JOIN dataset_info dsi ON di.dsid = dsi.dsid
+    WHERE di.datastate = '1'
+    <if test="userid != null and userid != ''">
+      and di.`owner` = #{userid}
+    </if>
+    <if test="dsid != null and dsid != ''">
+      AND  dsi.dsid = #{dsid}
+    </if>
+    <if test="keyword != null and keyword != ''">
+      and di.dataname like concat("%",concat(#{keyword},"%"))
+    </if>
+    ORDER BY di.createtime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+  <select id="getDataTextListCounts" resultType="int" parameterType="map" >
+    SELECT count(1)
+    FROM
+    data_info di
+    <if test="dsid != null and dsid != ''">
+      INNER JOIN dataset_info dsi ON di.dsid = dsi.dsid
+    </if>
+    WHERE
+    1=1
+    <if test="userid != null and userid != ''">
+      and di.`owner` = #{userid}
+    </if>
+    <if test="dsid != null and dsid != ''">
+      AND  dsi.dsid = #{dsid}
+    </if>
+    <if test="keyword != null and keyword != ''">
+      and di.dataname like concat("%",concat(#{keyword},"%"))
+    </if>
+  </select>
+
+  <!--根据任务id查询标注对象是图像的数据-->
+  <select id="getdatasbytaskid" resultType="map" parameterType="map" >
+      SELECT di.dataid,di.dataname,di.dataobjecttype,datapath
+      FROM data_info di
+      INNER JOIN task_annotation_data tad ON di.dataid = tad.sourceid
+      WHERE
+      tad.taskid =  #{taskid} and tad.datatype = '012002'
+  </select>
+
+  <!--获取比对数据时-->
+  <select id="getDataInfos" resultType="map" parameterType="map" >
+      SELECT dii.taskid,dii.dataid,dii.dataname,dii.dataobjecttype,dc.contentid,dc.content,dc.pn,dc.sn,dc.anninfos
+      FROM (
+			SELECT di.dataid,di.dataname,di.dataobjecttype,tad.taskid
+			FROM data_info di
+			INNER JOIN task_annotation_data tad ON di.dataid = tad.sourceid
+			WHERE tad.taskid =  #{taskid}
+			GROUP BY di.dataid
+			LIMIT #{querystart},#{pageSize}
+		) as dii
+      INNER JOIN task_annotation_data tad ON dii.dataid = tad.sourceid
+      INNER JOIN data_content dc ON dii.dataid = dc.dataid and tad.dataid = dc.contentid
+      WHERE
+        tad.taskid =  #{taskid}
+      ORDER BY dc.pn+0,dc.sn+0
+  </select>
+  <select id="getDataInfosCount" resultType="int" parameterType="map" >
+     SELECT COUNT(a.dataid) FROM (
+          SELECT di.dataid
+          FROM data_info di
+          INNER JOIN task_annotation_data tad ON di.dataid = tad.sourceid
+          WHERE tad.taskid = #{taskid}
+          GROUP BY di.dataid
+      ) a
+  </select>
+
+  <select id="getImageDataByIndexId" resultType="map" parameterType="map" >
+    select
+        di.dataname,di.dataid,di.datapath,di.dataobjecttype,di.createtime,
+        aooi.dataitemid,aooi.datainfo,aooi.objectdataid,aooi.annotationtype
+    FROM data_info di
+    INNER JOIN task_annotation_data tad ON di.dataid = tad.sourceid
+    INNER JOIN data_info_index dii ON di.dataid = dii.dataid
+    INNER JOIN annotation_other_object_info aooi ON aooi.objectdataid = tad.objectdataid
+    WHERE
+    dii.dataindexid = #{dataindexid}
+    AND tad.taskid = #{taskid}
+  </select>
+
+</mapper>

@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.DatasetInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.DatasetInfo" >
+    <id column="dsid" property="dsid" jdbcType="VARCHAR" />
+    <result column="dsname" property="dsname" jdbcType="VARCHAR" />
+    <result column="dataobjecttype" property="dataobjecttype" jdbcType="VARCHAR" />
+    <result column="scenariotype" property="scenariotype" jdbcType="VARCHAR" />
+    <result column="dsowner" property="dsowner" jdbcType="VARCHAR" />
+    <result column="dscreatetime" property="dscreatetime" jdbcType="VARCHAR" />
+    <result column="dsstate" property="dsstate" jdbcType="VARCHAR" />
+    <result column="dsusingstate" property="dsusingstate" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    dsid, dsname, dataobjecttype, scenariotype, dsowner, dscreatetime, dsstate, dsusingstate, 
+    note
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from dataset_info
+    where dsid = #{dsid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from dataset_info
+    where dsid = #{dsid,jdbcType=VARCHAR}
+  </delete>
+  <!--新增数据集-->
+  <insert id="addDataSetByMap" parameterType="map" >
+    insert into dataset_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="dsid != null" >
+        dsid,
+      </if>
+      <if test="dsname != null" >
+        dsname,
+      </if>
+      <if test="dataobjecttype != null" >
+        dataobjecttype,
+      </if>
+      <if test="scenariotype != null" >
+        scenariotype,
+      </if>
+      <if test="dsowner != null" >
+        dsowner,
+      </if>
+      <if test="dscreatetime != null" >
+        dscreatetime,
+      </if>
+      <if test="dsstate != null" >
+        dsstate,
+      </if>
+      <if test="dsusingstate != null" >
+        dsusingstate,
+      </if>
+      <if test="note != null" >
+        note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="dsid != null" >
+        #{dsid,jdbcType=VARCHAR},
+      </if>
+      <if test="dsname != null" >
+        #{dsname,jdbcType=VARCHAR},
+      </if>
+      <if test="dataobjecttype != null" >
+        #{dataobjecttype,jdbcType=VARCHAR},
+      </if>
+      <if test="scenariotype != null" >
+        #{scenariotype,jdbcType=VARCHAR},
+      </if>
+      <if test="dsowner != null" >
+        #{dsowner,jdbcType=VARCHAR},
+      </if>
+      <if test="dscreatetime != null" >
+        #{dscreatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="dsstate != null" >
+        #{dsstate,jdbcType=VARCHAR},
+      </if>
+      <if test="dsusingstate != null" >
+        #{dsusingstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <!--查询属于用户的数据集列表-->
+  <!--默认admin查询所有，查询数据集的权限只有admin、manager和pmanaer-->
+  <select id="getDatasetListByOwner" resultType="map" parameterType="map" >
+    select dsid,dsname,dataobjecttype,scenariotype,dsowner,dscreatetime,dsstate,dsusingstate,dsi.note,scedict.dictDesc AS scenariotypename,datatypedict.dictDesc AS dataobjecttypename
+    from dataset_info dsi
+    left JOIN task_dict scedict ON dsi.scenariotype = scedict.dictCode
+    INNER JOIN task_dict datatypedict ON dsi.dataobjecttype = datatypedict.dictCode
+    where dsstate = 1
+    <if test="sysrole != 'admin'">
+      and  dsowner = #{dsowner}
+    </if>
+    <if test="dsname != null and dsname != ''">
+      AND dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+    </if>
+    <if test="dataobjecttype != null and dataobjecttype != ''">
+      and  dataobjecttype = #{dataobjecttype}
+    </if>
+    <if test="scenariotype != null and scenariotype != ''">
+      and  scenariotype = #{scenariotype}
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  dscreatetime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  dscreatetime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  dscreatetime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+    <if test="sysrole == 'manager'">
+      union
+      select dsid,dsname,dataobjecttype,scenariotype,dsowner,dscreatetime,dsstate,dsusingstate,dsi.note,scedict.dictDesc AS scenariotypename,datatypedict.dictDesc AS dataobjecttypename
+      FROM project_info p
+      INNER JOIN project_user pu ON p.projectid = pu.projectid AND pu.prolekey = 'pmanager'
+      INNER JOIN dataset_info dsi ON pu.member = dsi.dsowner
+      left JOIN task_dict scedict ON dsi.scenariotype = scedict.dictCode
+      INNER JOIN task_dict datatypedict ON dsi.dataobjecttype = datatypedict.dictCode
+      WHERE  dsstate = 1 and  p.projectowner = #{dsowner}
+      <if test="dsname != null and dsname != ''">
+        AND dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+      </if>
+      <if test="dataobjecttype != null and dataobjecttype != ''">
+        and  dataobjecttype = #{dataobjecttype}
+      </if>
+      <if test="scenariotype != null and scenariotype != ''">
+        and  scenariotype = #{scenariotype}
+      </if>
+      <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+        and  dscreatetime between #{starttime} and  #{endtime}
+      </if>
+      <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+        and  dscreatetime <![CDATA[ >= ]]> #{starttime}
+      </if>
+      <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+        and  dscreatetime <![CDATA[ <= ]]>  #{endtime}
+      </if>
+    </if>
+    ORDER BY dscreatetime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+  <select id="getDatasetListCountByOwner" resultType="int" parameterType="map" >
+    <if test="sysrole == 'manager'">
+      SELECT COUNT(1) FROM (
+          select dsid
+          from dataset_info dsi
+          where dsstate = 1 and  dsowner = #{dsowner}
+          <if test="dsname != null and dsname != ''">
+            AND dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+          </if>
+          <if test="dataobjecttype != null and dataobjecttype != ''">
+            and  dataobjecttype = #{dataobjecttype}
+          </if>
+          <if test="scenariotype != null and scenariotype != ''">
+            and  scenariotype = #{scenariotype}
+          </if>
+          <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+            and  dscreatetime between #{starttime} and  #{endtime}
+          </if>
+          <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+            and  dscreatetime <![CDATA[ >= ]]> #{starttime}
+          </if>
+          <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+            and  dscreatetime <![CDATA[ <= ]]>  #{endtime}
+          </if>
+            union
+            select dsid
+            FROM project_info p
+            INNER JOIN project_user pu ON p.projectid = pu.projectid AND pu.prolekey = 'pmanager'
+            INNER JOIN dataset_info dsi ON pu.member = dsi.dsowner
+            WHERE  dsstate = 1 and  p.projectowner = #{dsowner}
+            <if test="dsname != null and dsname != ''">
+              AND dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+            </if>
+            <if test="dataobjecttype != null and dataobjecttype != ''">
+              and  dataobjecttype = #{dataobjecttype}
+            </if>
+            <if test="scenariotype != null and scenariotype != ''">
+              and  scenariotype = #{scenariotype}
+            </if>
+            <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+              and  dscreatetime between #{starttime} and  #{endtime}
+            </if>
+            <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+              and  dscreatetime <![CDATA[ >= ]]> #{starttime}
+            </if>
+            <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+              and  dscreatetime <![CDATA[ <= ]]>  #{endtime}
+            </if>
+
+      )a
+    </if>
+    <if test="sysrole != 'manager'">
+      select count(1)
+      from dataset_info
+      where dsstate = 1
+      <if test="sysrole != 'admin'">
+        and  dsowner = #{dsowner}
+      </if>
+      <if test="dsname != null and dsname != ''">
+        AND dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+      </if>
+      <if test="dataobjecttype != null and dataobjecttype != ''">
+        and  dataobjecttype = #{dataobjecttype}
+      </if>
+      <if test="scenariotype != null and scenariotype != ''">
+        and  scenariotype = #{scenariotype}
+      </if>
+      <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+        and  dscreatetime between #{starttime} and  #{endtime}
+      </if>
+      <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+        and  dscreatetime <![CDATA[ >= ]]> #{starttime}
+      </if>
+      <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+        and  dscreatetime <![CDATA[ <= ]]>  #{endtime}
+      </if>
+    </if>
+  </select>
+
+  <!--根据数据集id查询数据集详情信息-->
+  <select id="getDataSetInfoByDsid" resultType="map" parameterType="java.lang.String" >
+    select
+      dsid, dsname, dataobjecttype, scenariotype, dsowner, dscreatetime, dsupdatetime,dsstate, dsusingstate,note
+    from dataset_info
+    where dsid = #{dsid}
+  </select>
+
+  <!--检查用户是否创建过相同的数据集-->
+  <select id="checkIfExsit" resultType="map" parameterType="map" >
+    select
+      dsid, dsname, dataobjecttype, scenariotype, dsowner, dscreatetime, dsupdatetime,dsstate, dsusingstate,note
+    from dataset_info
+    where dsowner = #{dsowner} and dsname = #{dsname}
+    AND  dsstate = '1'
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="map" >
+    update dataset_info
+    <set >
+      <if test="dsname != null" >
+        dsname = #{dsname,jdbcType=VARCHAR},
+      </if>
+      <if test="dataobjecttype != null" >
+        dataobjecttype = #{dataobjecttype,jdbcType=VARCHAR},
+      </if>
+      <if test="scenariotype != null" >
+        scenariotype = #{scenariotype,jdbcType=VARCHAR},
+      </if>
+      <if test="dsowner != null" >
+        dsowner = #{dsowner,jdbcType=VARCHAR},
+      </if>
+      <if test="dscreatetime != null" >
+        dscreatetime = #{dscreatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="dsupdatetime != null" >
+        dsupdatetime = #{dsupdatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="dsstate != null" >
+        dsstate = #{dsstate,jdbcType=VARCHAR},
+      </if>
+      <if test="dsusingstate != null" >
+        dsusingstate = #{dsusingstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dsid = #{dsid,jdbcType=VARCHAR}
+  </update>
+
+  <!--获取数据集列表-->
+  <select id="getDataSettList" resultType="map" parameterType="map" >
+    SELECT dsid,dsname,note,dscreatetime
+    FROM dataset_info
+    WHERE dsstate = '1'
+    <if test="sysrole != 'admin'">
+      AND dsowner = #{userid}
+    </if>
+    <if test="keyword != null and keyword != ''">
+      and dsname like concat("%",concat(#{keyword},"%"))
+    </if>
+    <if test="sysrole == 'manager'">
+      union
+      select dsi.dsid,dsi.dsname,dsi.note,dsi.dscreatetime
+      FROM  dataset_info dsi
+      INNER JOIN  project_user pu ON pu.member = dsi.dsowner AND pu.prolekey = 'pmanager'
+      INNER JOIN project_info p ON p.projectid = pu.projectid
+      WHERE dsstate = '1' and p.projectowner =  #{userid}
+      <if test="keyword != null and keyword != ''">
+        and dsi.dsname like concat("%",concat(#{keyword},"%"))
+      </if>
+    </if>
+    ORDER BY dscreatetime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+  <select id="getDataSettListCounts" resultType="int" parameterType="map" >
+    SELECT count(1) from (
+        SELECT dsid
+        FROM dataset_info
+        WHERE dsstate = '1'
+        <if test="sysrole != 'admin'">
+          AND dsowner = #{userid}
+        </if>
+        <if test="keyword != null and keyword != ''">
+          and dsname like concat("%",concat(#{keyword},"%"))
+        </if>
+        <if test="sysrole == 'manager'">
+          union
+          select dsi.dsid
+          FROM  dataset_info dsi
+          INNER JOIN  project_user pu ON pu.member = dsi.dsowner AND pu.prolekey = 'pmanager'
+          INNER JOIN project_info p ON p.projectid = pu.projectid
+          WHERE dsstate = '1' and p.projectowner =  #{userid}
+          <if test="keyword != null and keyword != ''">
+            and dsi.dsname like concat("%",concat(#{keyword},"%"))
+          </if>
+        </if>
+
+    ) a
+
+  </select>
+
+
+  <update id="updateDeleteByPrimaryKey" parameterType="map" >
+    update dataset_info
+    <set >
+      <if test="dsupdatetime != null" >
+        dsupdatetime = #{dsupdatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="dsstate != null" >
+        dsstate = #{dsstate,jdbcType=VARCHAR},
+      </if>
+      <if test="dsusingstate != null" >
+        dsusingstate = #{dsusingstate,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dsid = #{dsid,jdbcType=VARCHAR}
+  </update>
+
+
+  <select id="dataSetSearch" resultType="map" parameterType="map" >
+    select dsi.dsid,dsname,dsi.dataobjecttype,dsi.scenariotype,dsowner,dscreatetime,dsstate,dsusingstate,dsi.note,scedict.dictDesc AS scenariotypename,datatypedict.dictDesc AS dataobjecttypename
+    from dataset_info dsi
+    left JOIN data_info di ON di.dsid = dsi.dsid
+    left JOIN task_dict scedict ON dsi.scenariotype = scedict.dictCode
+    left JOIN task_dict datatypedict ON dsi.dataobjecttype = datatypedict.dictCode
+    where dsstate = 1
+    <if test="sysrole != 'admin'">
+      and  dsowner = #{dsowner}
+    </if>
+    <if test="keyword != null and keyword != ''">
+      AND (
+          dsname LIKE CONCAT("%",CONCAT(#{keyword},"%")) or dsi.note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+       or di.dataname LIKE CONCAT("%",CONCAT(#{keyword},"%")) OR di.note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      or scedict.dictDesc LIKE CONCAT("%",CONCAT(#{keyword},"%")) or  datatypedict.dictDesc LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      )
+    </if>
+
+    <if test="dsname != null and dsname != ''">
+      AND dsi.dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+    </if>
+    <if test="dataname != null and dataname != ''">
+      AND di.dataname LIKE CONCAT("%",CONCAT(#{dataname},"%"))
+    </if>
+    <if test="dataobjecttype != null and dataobjecttype != ''">
+      and  dsi.dataobjecttype = #{dataobjecttype}
+    </if>
+    <if test="scenariotype != null and scenariotype != ''">
+      and  dsi.scenariotype = #{scenariotype}
+    </if>
+    <if test="note != null and note != ''">
+      AND dsi.note LIKE CONCAT("%",CONCAT(#{note},"%"))
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  dsi.dscreatetime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  dsi.dscreatetime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  dsi.dscreatetime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+    GROUP BY dsi.dsid
+    ORDER BY dsi.dscreatetime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+  <select id="dataSetSearchCount" resultType="int" parameterType="map" >
+    select count(1)
+    from dataset_info dsi
+    left JOIN data_info di ON di.dsid = dsi.dsid
+    left JOIN task_dict scedict ON dsi.scenariotype = scedict.dictCode
+    left JOIN task_dict datatypedict ON dsi.dataobjecttype = datatypedict.dictCode
+    where dsstate = 1
+    and  dsowner = #{dsowner}
+    <if test="keyword != null and keyword != ''">
+      AND (
+      dsname LIKE CONCAT("%",CONCAT(#{keyword},"%")) or dsi.note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      or di.dataname LIKE CONCAT("%",CONCAT(#{keyword},"%")) OR di.note LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      or scedict.dictDesc LIKE CONCAT("%",CONCAT(#{keyword},"%")) or  datatypedict.dictDesc LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+      )
+    </if>
+
+    <if test="dsname != null and dsname != ''">
+      AND dsi.dsname LIKE CONCAT("%",CONCAT(#{dsname},"%"))
+    </if>
+    <if test="dataname != null and dataname != ''">
+      AND di.dataname LIKE CONCAT("%",CONCAT(#{dataname},"%"))
+    </if>
+    <if test="dataobjecttype != null and dataobjecttype != ''">
+      and  dsi.dataobjecttype = #{dataobjecttype}
+    </if>
+    <if test="scenariotype != null and scenariotype != ''">
+      and  dsi.scenariotype = #{scenariotype}
+    </if>
+    <if test="note != null and note != ''">
+      AND dsi.note LIKE CONCAT("%",CONCAT(#{note},"%"))
+    </if>
+    <if test="starttime != null and starttime != '' and endtime != null and endtime != ''">
+      and  dsi.dscreatetime between #{starttime} and  #{endtime}
+    </if>
+    <if test="starttime != null and starttime != '' and (endtime == null or endtime == '')">
+      and  dsi.dscreatetime <![CDATA[ >= ]]> #{starttime}
+    </if>
+    <if test="(starttime == null or starttime == '' ) and endtime != null and endtime != ''">
+      and  dsi.dscreatetime <![CDATA[ <= ]]>  #{endtime}
+    </if>
+  </select>
+
+</mapper>

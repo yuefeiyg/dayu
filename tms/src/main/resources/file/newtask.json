@@ -1,0 +1,34 @@
+[
+    {
+        "projectname": "百科",
+        "tasktype": "标注任务",
+        "matchflag":false,
+        "performer": ["ST","WGR"],
+        "model": "标注模板一",
+        "dataset":"LJT数据源",
+        "resultdataset":"",
+        "datafile": ["1907.QG00801.txt","867.AC00033.txt","866.AC00862.txt"],
+        "title": "第五期day0",
+        "taskdesc": "第五期任务 day0",
+        "remark": "",
+        "deadline": "2019-2-1 18:00:00",
+        "consistent":"1",
+        "multiple":true
+    },
+    {
+        "projectname": "百科",
+        "tasktype": "标注任务",
+        "matchflag":true,
+        "performer": ["ST","WGR"],
+        "model": "标注模板一",
+        "dataset":"LJT数据源",
+        "resultdataset":"",
+        "datafile": ["10865.AC00277.txt","864.AC00494.txt"],
+        "title": "第五期day1",
+        "taskdesc": "第五期任务 day0",
+        "remark": "",
+        "deadline": "2019-2-1 18:00:00",
+        "consistent":"0",
+        "multiple":false
+    }
+]

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.taskResFileInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.taskResFileInfo" >
+    <id column="dataid" property="dataid" jdbcType="VARCHAR" />
+    <result column="dataname" property="dataname" jdbcType="VARCHAR" />
+    <result column="path" property="path" jdbcType="VARCHAR" />
+    <result column="taskid" property="taskid" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    dataid, dataname, path, taskid,state,createtime
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from task_res_file_info
+    where dataid = #{dataid,jdbcType=VARCHAR} and state = '1'
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from task_res_file_info
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.taskResFileInfo" >
+    insert into task_res_file_info (dataid, dataname, path, 
+      taskid,state,createtime)
+    values (#{dataid,jdbcType=VARCHAR}, #{dataname,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR}, 
+      #{taskid,jdbcType=VARCHAR},#{state,jdbcType=VARCHAR},#{createtime,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.taskResFileInfo" >
+    insert into task_res_file_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="dataid != null" >
+        dataid,
+      </if>
+      <if test="dataname != null" >
+        dataname,
+      </if>
+      <if test="path != null" >
+        path,
+      </if>
+      <if test="taskid != null" >
+        taskid,
+      </if>
+      <if test="filetype != null" >
+        filetype,
+      </if>
+      <if test="state != null" >
+        state,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="dataid != null" >
+        #{dataid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataname != null" >
+        #{dataname,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="filetype != null" >
+        #{filetype,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.taskResFileInfo" >
+    update task_res_file_info
+    <set >
+      <if test="dataname != null" >
+        dataname = #{dataname,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        path = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="taskid != null" >
+        taskid = #{taskid,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        state = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createtime = #{createtime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.taskResFileInfo" >
+    update task_res_file_info
+    set dataname = #{dataname,jdbcType=VARCHAR},
+      path = #{path,jdbcType=VARCHAR},
+      taskid = #{taskid,jdbcType=VARCHAR},
+    state = #{state,jdbcType=VARCHAR},
+    createtime = #{createtime,jdbcType=VARCHAR}
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateToDeleteByPrimaryKey" parameterType="com.blcultra.model.taskResFileInfo" >
+    update task_res_file_info
+    set state = #{state,jdbcType=VARCHAR},
+    createtime = #{createtime,jdbcType=VARCHAR}
+    where dataid = #{dataid,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateToDeleteStateByTaskIds" parameterType="java.util.List">
+    UPDATE task_res_file_info SET
+    state='0'
+    WHERE taskId IN
+    <foreach collection="list"  item="item" open="("
+             separator="," close=")">
+      #{item}
+    </foreach>
+  </update>
+
+  <select id="getResultDataId" parameterType="java.lang.String" resultType="java.lang.String" >
+    select tr.dataid
+    from task_res_file_info tr
+    where taskid = #{taskId} and state = '1'
+  </select>
+
+  <select id="getDatasByTaskId" parameterType="java.lang.String" resultType="map">
+    select tr.dataid,tr.dataname,tr.path from
+    task_res_file_info tr
+    WHERE
+    tr.taskid  =  #{taskId} and state = '1'
+  </select>
+  <!--获取审核通过的任务文件数据-->
+  <select id="getFinalDatasByTaskId" parameterType="java.lang.String" resultType="map">
+    select tr.dataid,tr.dataname,tr.path from
+    task_res_file_info tr
+    WHERE 1=1
+    AND tr.taskid  =  #{taskid}
+    AND tr.filetype = 'final'
+    and state = '1'
+  </select>
+
+  <select id="getDataByTaskIdAndDataId" parameterType="map" resultType="map">
+    select tr.dataid,tr.dataname,tr.path from
+    task_res_file_info tr
+    WHERE
+    tr.taskid  =  #{taskId} and tr.dataid = #{dataid}
+    and state = '1'
+  </select>
+</mapper>

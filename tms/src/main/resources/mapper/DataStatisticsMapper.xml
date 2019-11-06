@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.DataStatisticsMapper" >
+   <select id="getProjectStatisticCountByUser" parameterType="map" resultType="map">
+    SELECT
+    (SELECT count(p.projectid) as myprojectcount FROM project_info p WHERE p.projectowner = #{userid} ) as myprojectcount,
+    (SELECT count(p.projectid) as manageprojectcount FROM project_info p INNER JOIN project_user pu ON p.projectid = pu.projectid
+    WHERE pu.member=  #{userid} and pu.prolekey = 'pmanager') as manageprojectcount
+    FROM DUAL
+  </select>
+
+    <select id="getTaskStatisticCountByUser" parameterType="map" resultType="map">
+    SELECT
+    (SELECT count(task.taskid) as mytaskcount FROM task_info task WHERE task.createuserid = '') as mytaskcount,
+    (SELECT count(task.taskid) as performertaskcount FROM task_info task WHERE task.performerid = '') as performertaskcount,
+    (SELECT count(task.taskid) as managetaskcount FROM (
+        SELECT p.projectid FROM project_info p WHERE p.projectowner = ''
+        UNION
+        SELECT p.projectid FROM project_info p INNER JOIN project_user pu ON p.projectid = pu.projectid
+        WHERE pu.member= '' and pu.prolekey = 'pmanager'
+        ) aa
+        INNER JOIN task_info task ON task.projectid = aa.projectid
+        WHERE task.taskstate = '002005' AND task.performerid != ''
+    ) as managetaskcount
+    FROM  DUAL
+  </select>
+
+</mapper>

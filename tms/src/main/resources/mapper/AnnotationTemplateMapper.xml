@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.AnnotationTemplateMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.AnnotationTemplate" >
+    <id column="templateid" property="templateid" jdbcType="VARCHAR" />
+    <result column="templatename" property="templatename" jdbcType="VARCHAR" />
+    <result column="templatetype" property="templatetype" jdbcType="VARCHAR" />
+    <result column="annotationobject" property="annotationobject" jdbcType="VARCHAR" />
+    <result column="annotationtype" property="annotationtype" jdbcType="VARCHAR" />
+    <result column="actions" property="actions" jdbcType="VARCHAR" />
+    <result column="modules" property="modules" jdbcType="VARCHAR" />
+    <result column="auxshortcutsettings" property="auxshortcutsettings" jdbcType="VARCHAR" />
+    <result column="note" property="note" jdbcType="VARCHAR" />
+    <result column="createuserid" property="createuserid" jdbcType="VARCHAR" />
+    <result column="createdate" property="createdate" jdbcType="VARCHAR" />
+    <result column="updatedate" property="updatedate" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="INTEGER" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.blcultra.model.AnnotationTemplate" extends="BaseResultMap" >
+    <result column="note" property="note" jdbcType="LONGVARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    templateid, templatename, templatetype, annotationobject, annotationtype, actions, 
+    createuserid, createdate, updatedate, state
+  </sql>
+  <sql id="Blob_Column_List" >
+    note
+  </sql>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from annotation_template
+    where templateid = #{templateid,jdbcType=VARCHAR}
+  </delete>
+
+  <!--添加模板信息-->
+  <insert id="insertAnnotationTemplate" parameterType="map" >
+    insert into annotation_template
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="templateid != null" >
+        templateid,
+      </if>
+      <if test="templatename != null" >
+        templatename,
+      </if>
+      <if test="templatetype != null" >
+        templatetype,
+      </if>
+      <if test="annotationobject != null" >
+        annotationobject,
+      </if>
+      <if test="annotationtype != null" >
+        annotationtype,
+      </if>
+      <if test="actions != null" >
+        actions,
+      </if>
+      <if test="modules != null" >
+        modules,
+      </if>
+      <if test="auxshortcutsettings != null" >
+        auxshortcutsettings,
+      </if>
+      <if test="createuserid != null" >
+        createuserid,
+      </if>
+      <if test="createdate != null" >
+        createdate,
+      </if>
+      <if test="updatedate != null" >
+        updatedate,
+      </if>
+      <if test="state != null" >
+        state,
+      </if>
+      <if test="note != null" >
+        note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="templateid != null" >
+        #{templateid,jdbcType=VARCHAR},
+      </if>
+      <if test="templatename != null" >
+        #{templatename,jdbcType=VARCHAR},
+      </if>
+      <if test="templatetype != null" >
+        #{templatetype,jdbcType=VARCHAR},
+      </if>
+      <if test="annotationobject != null" >
+        #{annotationobject,jdbcType=VARCHAR},
+      </if>
+      <if test="annotationtype != null" >
+        #{annotationtype,jdbcType=VARCHAR},
+      </if>
+      <if test="actions != null" >
+        #{actions,jdbcType=VARCHAR},
+      </if>
+      <if test="modules != null" >
+        #{modules,jdbcType=VARCHAR},
+      </if>
+      <if test="auxshortcutsettings != null" >
+        #{auxshortcutsettings,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=VARCHAR},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <!--检查用户是否已经创建过相同模板名的模板-->
+  <select id="checkTemplateIfExistsByUser" parameterType="map" resultType="map">
+      SELECT * FROM annotation_template  WHERE templatename = #{templatename} AND createuserid =  #{createuserid} AND state != 0
+  </select>
+
+  <!--获取模板详情信息-->
+  <select id="getTemplateInfo" parameterType="map" resultType="map">
+    SELECT
+        template.templateid,templatename,templatetype,annotationobject,
+        annotationtype,actions,modules,auxshortcutsettings,template.createuserid
+    <if test="taskid != null">
+      FROM task_info task
+      INNER JOIN annotation_template template ON task.templateid = template.templateid
+      WHERE  task.taskid = #{taskid}
+    </if>
+    <if test="templateid != null">
+      FROM  annotation_template template
+      WHERE  template.templateid = #{templateid}
+    </if>
+  </select>
+
+  <!--获取模板详情信息-->
+  <select id="getTemplateInfoById" parameterType="java.lang.String" resultType="map">
+    SELECT
+    template.templateid,template.templatename,template.templatetype,template.annotationobject,
+    template.annotationtype
+    FROM annotation_template template
+    WHERE template.templateid = #{templateId}
+
+  </select>
+
+  <!--查询模板列表-->
+  <select id="getTemplateList" parameterType="map" resultType="map">
+    SELECT template.templateid,templatename,templatetype,annotationobject,annotationtype,actions,modules,auxshortcutsettings,template.createuserid,template.createdate
+    FROM annotation_template template
+    WHERE 1=1
+    <if test="userid != null">
+     and template.createuserid = #{userid}
+    </if>
+    <if test="keyword != null">
+      AND template.templatename LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+    </if>
+    AND  template.state != 0
+    ORDER BY template.createdate DESC
+    limit #{queryStart}, #{pageSize}
+  </select>
+
+  <select id="getTemplateListCount" parameterType="map" resultType="int">
+    SELECT count(1)
+    FROM annotation_template template
+    WHERE 1=1
+    <if test="userid != null">
+      and template.createuserid = #{userid}
+    </if>
+    <if test="keyword != null">
+      AND template.templatename LIKE CONCAT("%",CONCAT(#{keyword},"%"))
+    </if>
+  </select>
+
+  <select id="selectTemplatelist" parameterType="map" resultType="map">
+    SELECT template.templateid,templatename,template.createuserid
+    FROM annotation_template template
+    ORDER BY template.createdate
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.AnnotationTemplate" >
+    update annotation_template
+    <set >
+      <if test="templatename != null" >
+        templatename = #{templatename,jdbcType=VARCHAR},
+      </if>
+      <if test="templatetype != null" >
+        templatetype = #{templatetype,jdbcType=VARCHAR},
+      </if>
+      <if test="annotationobject != null" >
+        annotationobject = #{annotationobject,jdbcType=VARCHAR},
+      </if>
+      <if test="annotationtype != null" >
+        annotationtype = #{annotationtype,jdbcType=VARCHAR},
+      </if>
+      <if test="actions != null" >
+        actions = #{actions,jdbcType=VARCHAR},
+      </if>
+      <if test="modules != null" >
+        modules = #{modules,jdbcType=VARCHAR},
+      </if>
+      <if test="auxshortcutsettings != null" >
+        auxshortcutsettings = #{auxshortcutsettings,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        createuserid = #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        createdate = #{createdate,jdbcType=VARCHAR},
+      </if>
+      <if test="updatedate != null" >
+        updatedate = #{updatedate,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="note != null" >
+        note = #{note,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where templateid = #{templateid,jdbcType=VARCHAR}
+  </update>
+
+  <!--获取模板详情信息-->
+  <select id="getTemplateIdByName" parameterType="java.lang.String" resultType="java.lang.String">
+    SELECT
+    template.templateid
+    FROM annotation_template template
+    WHERE template.templatename = #{templateName}
+
+  </select>
+
+
+  <update id="updateDeleteTemplate" parameterType="java.lang.String" >
+      UPDATE annotation_template SET state = '0' WHERE templateid = #{templateid}
+  </update>
+
+  <update id="updateDeleteTemplates" parameterType="java.lang.String" >
+      UPDATE annotation_template SET state = '0' WHERE templateid in (${templateid})
+  </update>
+
+  <!--获取模板详情信息-->
+  <select id="getTemplateInfoByTaskId" parameterType="java.lang.String" resultType="map">
+    SELECT
+    template.templateid,template.templatename,template.templatetype,template.annotationobject,
+    template.annotationtype
+    FROM annotation_template template
+    INNER JOIN task_info task ON task.templateid = template.templateid
+    WHERE task.taskid = #{taskId}
+  </select>
+</mapper>

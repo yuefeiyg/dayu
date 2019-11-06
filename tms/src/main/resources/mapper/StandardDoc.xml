@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.StandardDocMapper" >
+
+  <select id="getCatalogues" parameterType="java.lang.String" resultType="map">
+    SELECT catalogueid,layer,title,sequence,parentcatalogueid FROM `standard_ catalogue`
+    WHERE docid = #{docid} ORDER BY layer,parentcatalogueid,sequence
+  </select>
+
+
+  <select id="getContent" parameterType="map" resultType="map">
+    SELECT IFNULL(content.content,"") as content,cata.catalogueid,cata.layer,cata.title,cata.parentcatalogueid,cata.sequence,'content' as type
+    FROM  `standard_ catalogue` cata
+    LEFT JOIN standard_content content ON cata.catalogueid = content.catalogueid
+    WHERE 1=1
+    <if test="catalogueid != null">
+      AND cata.catalogueid = #{catalogueid}
+    </if>
+    <if test="parentcatalogueid != null">
+      AND cata.parentcatalogueid = #{parentcatalogueid}
+    </if>
+    <if test="docid != null">
+      AND cata.docid = #{docid}
+    </if>
+    ORDER BY
+    cata.layer,cata.parentcatalogueid,cata.sequence
+  </select>
+
+  <select id="getOneContent" parameterType="map" resultType="map">
+    SELECT content.content,cata.title as catalogue
+    from  standard_content content,`standard_ catalogue` cata
+    where 1=1
+    <if test="docid != null">
+      AND cata.docid = #{docid}
+    </if>
+    <if test="catalogueid != null">
+      AND cata.catalogueid = #{catalogueid}
+    </if>
+    LIMIT 1
+  </select>
+</mapper>

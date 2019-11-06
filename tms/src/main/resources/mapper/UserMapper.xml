@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.blcultra.dao.UserMapper" >
+  <resultMap id="BaseResultMap" type="com.blcultra.model.User" >
+    <id column="userid" property="userid" jdbcType="VARCHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="telephone" property="telephone" jdbcType="VARCHAR" />
+    <result column="ustate" property="ustate" jdbcType="VARCHAR" />
+    <result column="createtime" property="createtime" jdbcType="VARCHAR" />
+    <result column="updatetime" property="updatetime" jdbcType="VARCHAR" />
+    <result column="personaldesc" property="personaldesc" jdbcType="VARCHAR" />
+    <result column="createuserid" property="createuserid" jdbcType="VARCHAR" />
+    <collection property="roles" ofType="com.blcultra.model.Role">
+      <id property="roleid" column="roleid" />
+      <result property="rolename" column="rolename" />
+      <result property="rolekey" column="rolekey"/>
+      <collection property="menus" ofType="com.blcultra.model.Menu">
+        <id property="menuid" column="menuid" />
+        <result property="menuname" column="menuname"/>
+        <result property="menuurl" column="menuurl" />
+        <result property="iconurl" column="iconurl" />
+        <result property="parentid" column="parentId" />
+        <result property="enabled" column="enabled"  />
+        <result property="level" column="level" />
+      </collection>
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    userid, username, password, telephone, ustate, createtime, updatetime, personaldesc
+  </sql>
+
+  <select id="adminGetUsers" resultType="map">
+    SELECT u.userid ,u.username,u.ustate
+    FROM `user` u
+    WHERE u.ustate = '003001' AND u.userid != '1'
+  </select>
+
+  <select id="getSearchUserList" parameterType="map" resultType="map">
+    <if test="visible == 1 or visible == null">
+      SELECT tur.userid,tur.roleid,tur.username, tur.personaldesc, tur.rolename, tur.createtime,tur.visible,tur.createuserid FROM
+      (SELECT u.userid ,r.roleid AS roleid, u.username ,u.personaldesc ,
+      r.rolename,GROUP_CONCAT(ur.visible) AS visible ,u.createuserid,u.createtime
+      FROM `user` u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE u.ustate = '003001' AND  r.roleid != '1'
+      GROUP BY u.userid
+      ) tur
+      WHERE tur.username LIKE '%${query}%' OR tur.rolename LIKE '%${query}%'
+      OR tur.personaldesc LIKE '%${query}%'
+      ORDER BY tur.createtime DESC
+      <if test="queryStart != null and pageSize != null and pageSize !=0">
+        limit #{queryStart}, #{pageSize}
+      </if>
+    </if>
+    <if test="visible != null and visible == 0">
+      SELECT tur.userid,tur.username, tur.personaldesc, tur.rolename, tur.createtime,tur.visible,tur.createuserid FROM
+      (SELECT u.userid , u.username ,u.personaldesc ,r.rolename ,
+      GROUP_CONCAT(ur.visible) AS visible, u.createuserid, u.createtime
+      FROM `user` u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE u.ustate = '003001' AND  r.roleid != '1'
+      and u.createuserid =  #{createuserid,jdbcType=VARCHAR}
+      GROUP BY u.userid ) tur
+      WHERE tur.username LIKE  '%${query}%' OR tur.rolename LIKE '%${query}%'
+      OR tur.personaldesc LIKE '%${query}%'
+      ORDER BY tur.createtime DESC
+      <if test="queryStart != null and pageSize != null and pageSize !=0">
+        limit #{queryStart}, #{pageSize}
+      </if>
+    </if>
+  </select>
+  <!--获取模糊搜索后的用户条数-->
+  <select id="getSearchUserListCounts" resultType="int" parameterType="map">
+    <if test="visible == 1 or visible == null">
+      SELECT COUNT(tur.userid) FROM
+      (SELECT u.userid , u.username ,u.personaldesc ,GROUP_CONCAT(r.roledesc) AS roles ,u.createtime
+      FROM `user` u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE u.ustate = '003001'  AND  r.roleid != '1'
+      GROUP BY u.userid ) tur
+      WHERE tur.username LIKE '%${query}%' OR tur.roles LIKE '%${query}%'
+      OR tur.personaldesc LIKE '%${query}%'
+    </if>
+    <if test="visible != null and visible == 0">
+      SELECT COUNT(tur.userid) FROM
+      (SELECT u.userid , u.username ,u.personaldesc ,GROUP_CONCAT(r.roledesc) AS roles ,u.createtime
+      FROM `user` u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE u.ustate = '003001' AND  r.roleid != '1'
+      and u.createuserid =  #{createuserid,jdbcType=VARCHAR}
+      GROUP BY u.userid ) tur
+      WHERE tur.username LIKE '%${query}%' OR tur.roles LIKE '%${query}%'
+      OR tur.personaldesc LIKE '%${query}%'
+    </if>
+  </select>
+  <!--根据用户名模糊搜索用户列表-->
+  <select id="getLikeUserByUserName" resultType="map" parameterType="map" >
+    <if test="visible == 1 or visible == null">
+      SELECT tur.userid,tur.roleid,tur.username, tur.personaldesc, tur.roles, tur.createtime,tur.visible,tur.createuserid FROM
+      (SELECT u.userid ,r.roleid AS roleid, u.username ,u.personaldesc ,
+      GROUP_CONCAT(r.roledesc) AS roles ,GROUP_CONCAT(ur.visible) AS visible ,u.createuserid,u.createtime
+      FROM `user` u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE u.ustate = '003001' AND  r.roleid != '1'
+      GROUP BY u.userid
+      ) tur
+      WHERE tur.username LIKE '%${query}%'
+      ORDER BY tur.createtime DESC
+    </if>
+    <if test="visible != null and visible == 0">
+      SELECT tur.userid,tur.username, tur.personaldesc, tur.roles, tur.createtime,tur.visible,tur.createuserid FROM
+      (SELECT u.userid , u.username ,u.personaldesc ,GROUP_CONCAT(r.roledesc) AS roles ,
+      GROUP_CONCAT(ur.visible) AS visible, u.createuserid, u.createtime
+      FROM `user` u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON r.roleid = ur.roleid
+      WHERE u.ustate = '003001' AND  r.roleid != '1'
+      and u.createuserid =  #{createuserid,jdbcType=VARCHAR}
+      GROUP BY u.userid ) tur
+      WHERE tur.username LIKE  '%${query}%'
+      ORDER BY tur.createtime DESC
+    </if>
+  </select>
+
+  <select id="getUserList" parameterType="map" resultType="map">
+    select u.* ,r.* , m.*,td.dictDesc AS userstatename,ur.visible
+    from `user` u
+    LEFT JOIN user_role ur ON ur.userid = u.userid
+    LEFT JOIN role r ON  r.roleid = ur.roleid
+    LEFT JOIN menu_role mr ON  mr.roleid = r.roleid
+    LEFT JOIN menu m ON  m.menuid = mr.menuid
+        LEFT JOIN task_dict td ON td.dictCode =  u.ustate
+    WHERE  1=1
+    AND  ustate='003001'
+    <if test="createuserid !=null ">
+      AND createuserid =#{createuserid,jdbcType=VARCHAR}
+    </if>
+    <if test="query !=null ">
+      AND u.username LIKE CONCAT("%",CONCAT(#{query},"%"))
+    </if>
+    ORDER BY u.createtime DESC
+    <if test="queryStart != null and pageSize != null and pageSize !=0">
+      limit #{queryStart}, #{pageSize}
+    </if>
+  </select>
+  <select id="getUserListCounts" parameterType="map" resultType="int">
+    select COUNT(u.userId)
+    from `user` u
+    WHERE 1=1
+    AND  ustate = '003001'
+    <if test="createuserid !=null ">
+      AND createuserid =#{createuserid,jdbcType=VARCHAR}
+    </if>
+    <if test="query !=null ">
+      AND u.username LIKE CONCAT("%",CONCAT(#{query},"%"))
+    </if>
+  </select>
+
+  <update id="updateUserByIds" parameterType="java.util.List">
+    UPDATE `user` u SET
+    ustate='003000'
+    WHERE u.userid IN
+    <foreach collection="list"  item="item" open="("
+             separator="," close=")">
+      <if test="item!=null and item !=''">
+        #{item}
+      </if>
+    </foreach>
+  </update>
+
+  <select id="selectByLoginName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select u.userid,u.username,u.password,u.ustate,u.telephone ,u.personaldesc ,r.roleid,r.rolekey,r.rolename , m.*
+    from  user u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON  r.roleId = ur.roleId
+      LEFT JOIN menu_role mr ON  mr.roleid = r.roleid
+      LEFT JOIN menu m ON  m.menuid = mr.menuid
+    WHERE 1=1
+    AND  u.ustate = '003001'
+    AND  u.username = #{username,jdbcType=VARCHAR}
+  </select>
+
+<!--根据用户id获取用户详细信息包括用户信息和用户角色信息以及所拥有的菜单信息-->
+  <select id="selectUserDetailsByUserId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select u.userid,u.username,u.password,u.ustate,u.telephone ,u.personaldesc ,r.roleid,r.rolekey,r.rolename , m.*
+    from  user u
+      LEFT JOIN user_role ur ON ur.userid = u.userid
+      LEFT JOIN role r ON  r.roleId = ur.roleId
+      LEFT JOIN menu_role mr ON  mr.roleid = r.roleid
+      LEFT JOIN menu m ON  m.menuid = mr.menuid
+    where u.userid = #{userid,jdbcType=VARCHAR}
+  </select>
+
+
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from user
+    where userid = #{userid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from user
+    where userid = #{userid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.blcultra.model.User" >
+    insert into user (userid, username, password, 
+      telephone, ustate, createtime, 
+      updatetime, personaldesc)
+    values (#{userid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
+      #{telephone,jdbcType=VARCHAR}, #{ustate,jdbcType=VARCHAR}, #{createtime,jdbcType=VARCHAR}, 
+      #{updatetime,jdbcType=VARCHAR}, #{personaldesc,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.blcultra.model.User" >
+    insert into user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="userid != null" >
+        userid,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="password != null" >
+        password,
+      </if>
+      <if test="telephone != null" >
+        telephone,
+      </if>
+      <if test="ustate != null" >
+        ustate,
+      </if>
+      <if test="createtime != null" >
+        createtime,
+      </if>
+      <if test="updatetime != null" >
+        updatetime,
+      </if>
+      <if test="personaldesc != null" >
+        personaldesc,
+      </if>
+      <if test="createuserid != null" >
+        createuserid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null" >
+        #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="ustate != null" >
+        #{ustate,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        #{updatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="personaldesc != null" >
+        #{personaldesc,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        #{createuserid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.blcultra.model.User" >
+    update user
+    <set >
+      <if test="username != null" >
+        username = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="telephone != null" >
+        telephone = #{telephone,jdbcType=VARCHAR},
+      </if>
+      <if test="ustate != null" >
+        ustate = #{ustate,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null" >
+        createtime = #{createtime,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null" >
+        updatetime = #{updatetime,jdbcType=VARCHAR},
+      </if>
+      <if test="personaldesc != null" >
+        personaldesc = #{personaldesc,jdbcType=VARCHAR},
+      </if>
+      <if test="createuserid != null" >
+        #{createuserid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where userid = #{userid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.blcultra.model.User" >
+    update user
+    set username = #{username,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      telephone = #{telephone,jdbcType=VARCHAR},
+      ustate = #{ustate,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=VARCHAR},
+      updatetime = #{updatetime,jdbcType=VARCHAR},
+      personaldesc = #{personaldesc,jdbcType=VARCHAR},
+      createuserid = #{createuserid,jdbcType=VARCHAR}
+    where userid = #{userid,jdbcType=VARCHAR}
+  </update>
+  <!--根据用户名模糊查询用户信息-->
+  <!--<select id="getLikeUserByUserName" resultType="map" parameterType="map" >-->
+     <!--select userid, username-->
+      <!--from `user` u-->
+      <!--where  u.ustate = '003001'-->
+      <!--and  u.createuserid = #{userid}-->
+      <!--<if test="username != null">-->
+        <!--AND username LIKE concat('%',#{username},'%')-->
+      <!--</if>-->
+  <!--</select>-->
+
+  <!--获取所有项目管理员-->
+  <select id="getManagers" resultType="map" parameterType="map" >
+    select u.userid, username
+    from `user` u
+    INNER JOIN user_role ur ON ur.userid = u.userid
+    INNER JOIN role r ON ur.roleid = r.roleid
+    where  u.ustate = '003001'
+    AND r.rolekey IN ('admin','manager')
+    <if test="username != null">
+      AND u.username LIKE concat('%',#{username},'%')
+    </if>
+    <if test="userid != null">
+      AND u.userid != #{userid}
+    </if>
+  </select>
+
+  <!--检查用户是否在项目中-->
+  <select id="checkAndgetUserIdByUserNameAndProject" parameterType="map" resultType="java.lang.String">
+    SELECT u.userid FROM `user`  u
+    <if test="projectid != null or projectname != null">
+      INNER JOIN project_user  pu ON u.userid = pu.member
+    </if>
+    <if test="projectname != null">
+      INNER JOIN project_info pinfo ON pinfo.projectid = pu.projectid
+    </if>
+    WHERE
+    u.username = #{performername}
+    <if test="projectname != null">
+      AND pinfo.projectname = #{projectname}
+    </if>
+    <if test="projectid != null">
+      AND pu.projectid = #{projectid}
+    </if>
+    GROUP BY u.userid
+  </select>
+
+  <!--根据任务ID查询该任务归属项目的组成员列表：在创建任务时，选择任务执行人时，需有改项目组成员下拉列表-->
+  <select id="getAuditorsByTaskId" parameterType="map" resultType="map">
+    <if test="type == null"><!-- 单个任务-->
+      SELECT u.userid, u.username
+      FROM `user` u
+      INNER JOIN project_user pu on pu.member = u.userId
+      INNER JOIN task_info task ON task.projectid = pu.projectid
+      WHERE task.taskId =  #{taskid} and pu.prolekey != 'member'
+      union
+      select  u.userid, u.username
+      FROM `user` u where u.userId = #{userid}
+    </if>
+    <if test="type == 'multiproject'">
+      SELECT u.userid, u.username  FROM `user` u
+      INNER JOIN (
+      SELECT count(pu.member) as countnum,pu.member FROM project_user pu INNER JOIN task_info task ON pu.projectid = task.projectid AND pu.prolekey != 'member'
+      WHERE task.taskid in (${taskid})
+      GROUP BY pu.member
+      ) auditor on u.userid = auditor.member
+      WHERE auditor.countnum > 1
+      union
+      select  u.userid, u.username
+      FROM `user` u where u.userId = #{userid}
+    </if>
+    <if test="type == 'singleproject'">
+      SELECT u.userid, u.username  FROM `user` u
+      INNER JOIN (
+        SELECT pu.member FROM project_user pu INNER JOIN task_info task ON pu.projectid = task.projectid AND pu.prolekey != 'member'
+        WHERE task.taskid in (${taskid})
+      ) auditor on u.userid = auditor.member
+      union
+      select  u.userid, u.username
+      FROM `user` u where u.userId = #{userid}
+    </if>
+  </select>
+</mapper>

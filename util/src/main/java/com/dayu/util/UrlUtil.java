@@ -1,6 +1,6 @@
 package com.dayu.util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StringUtils;
 
 import java.net.URLEncoder;
 import java.util.Map;
