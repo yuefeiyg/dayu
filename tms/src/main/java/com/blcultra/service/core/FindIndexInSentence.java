@@ -86,13 +86,13 @@ public class FindIndexInSentence {
                 newcontent = newcontent.replace("]","");
             }
             else if("<<".equals(labelsymbol1)){
-                newcontent = newcontent.replace("<<","@bl@");
-                newcontent = newcontent.replace(">>","@bl@");
+                newcontent = newcontent.replace("<<","@bb@");
+                newcontent = newcontent.replace(">>","@be@");
                 newcontent = newcontent.replaceAll("[**<>(){}|\\\\||]","");
                 newcontent = newcontent.replace("[","");
                 newcontent = newcontent.replace("]","");
-                newcontent = newcontent.replace("@bl@","<<");
-                newcontent = newcontent.replace("@bl@",">>");
+                newcontent = newcontent.replace("@bb@","<<");
+                newcontent = newcontent.replace("@be@",">>");
             }else if("[".equals(labelsymbol1)){
                 newcontent = newcontent.replaceAll("[**<>(){}|\\\\<<>>||]","");
             }

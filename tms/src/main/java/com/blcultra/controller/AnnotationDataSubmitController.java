@@ -41,7 +41,7 @@ public class AnnotationDataSubmitController {
     public String batchSubmitLabelData(  @RequestParam(value = "taskid",required = true) String taskid){
 
         log.info("进入AnnotationDataExportController控制器类  submitLabelData  入参==>" +
-                "任务taskid:{}"+ taskid);
+                "任务taskid:{}"+ taskid) ;
         String res = annotationDataSubmitService.batchSubmitLabelData(taskid);
         return res;
     }
