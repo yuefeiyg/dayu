@@ -12,10 +12,12 @@ import com.dayu.util.FileUtil;
 import com.dayu.util.JsonFileUtil;
 import com.dayu.util.StringUtil;
 import com.dayu.util.ZipFileUtil;
+import com.google.errorprone.annotations.concurrent.LazyInit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +48,7 @@ public class DataServiceUtil {
     private DataInfoIndexMapper dataInfoIndexMapper;
     @Autowired
     private AnalysisSymbolUtil analysisSymbolUtil;
-    @Autowired
+    @Autowired @Lazy
     private DataParser DataParser;
 
     /**
