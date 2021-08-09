@@ -70,7 +70,7 @@
         <poi-ooxml-version>3.17</poi-ooxml-version>
         <commons-net-version>3.3</commons-net-version>
         <reindex-version>2.4.3</reindex-version>
-        <elasticsearch-version>2.4.6</elasticsearch-version>
+        <elasticsearch-version>6.8.17</elasticsearch-version>
         <jest-version>5.3.3</jest-version>
 
     </properties>
